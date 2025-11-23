@@ -1,16 +1,9 @@
-package liquidwar.modele;
+package model;
 
 public class CarteJeu {
     private final int largeur;
     private final int hauteur;
     private final Case[][] cases;
-
-    public CarteJeu(int largeur, int hauteur) {
-        this.largeur = largeur;
-        this.hauteur = hauteur;
-        this.cases = new Case[hauteur][largeur];
-        initialiserVide();
-    }
 
     public enum TypeCase {
         VIDE,
@@ -18,9 +11,9 @@ public class CarteJeu {
         PARTICULE
     }
 
-    public static class Case { // classe interne pour representer une case de la carte
+    public static class Case {
         private TypeCase type;
-        private Particule particule; // null si pas de particule
+        private Particule particule;
 
         public Case(TypeCase type) {
             this.type = type;
@@ -41,8 +34,15 @@ public class CarteJeu {
 
         public void setParticule(Particule p) {
             this.particule = p;
-            this.type = (p == null) ? TypeCase.VIDE : TypeCase.PARTICULE; // si pas de 
+            this.type = (p == null) ? TypeCase.VIDE : TypeCase.PARTICULE;
         }
+    }
+
+    public CarteJeu(int largeur, int hauteur) {
+        this.largeur = largeur;
+        this.hauteur = hauteur;
+        this.cases = new Case[hauteur][largeur];
+        initialiserVide();
     }
 
     private void initialiserVide() {
@@ -62,8 +62,9 @@ public class CarteJeu {
     }
 
     public Case getCase(int x, int y) {
-        if (x < 0 || x >= largeur || y < 0 || y >= hauteur)
+        if (x < 0 || x >= largeur || y < 0 || y >= hauteur) {
             return null;
+        }
         return cases[y][x];
     }
 }

@@ -1,20 +1,19 @@
+package model;
+
 public class Particule {
-    private final int equipe; // num de l'equipe
+    private final Equipe equipe;
     private int energie;
-    private final int energieMin; // minimum d'energie possible
+    private final int energieMin; // energie minimum possible
     private final int energieMax;
 
-    private final int couleur; // couleur de l'equipe (en rgb surement )
-
-    public Particule(int equipe, int energieInitiale, int energieMin, int energieMax, int couleur) {
+    public Particule(Equipe equipe, int energieInitiale, int energieMin, int energieMax) {
         this.equipe = equipe;
         this.energie = energieInitiale;
         this.energieMin = energieMin;
         this.energieMax = energieMax;
-        this.couleur = couleur;
     }
 
-    public int getEquipe() {
+    public Equipe getEquipe() {
         return equipe;
     }
 
@@ -27,12 +26,12 @@ public class Particule {
     }
 
     public int getCouleur() {
-        return couleur;
+        return equipe.getCouleur();
     }
 
     public boolean diminuerEnergie(int quantite) {
         setEnergie(energie - quantite);
-        return energie <= energieMin; // retourne vrai si energie est en dessous du minimum
+        return energie <= energieMin;
     }
 
     public void augmenterEnergie(int quantite) {
