@@ -8,39 +8,6 @@ public class CarteJeu {
     private final int hauteur;
     private final Case[][] cases;
 
-    public enum TypeCase {
-        VIDE,
-        OBSTACLE,
-        PARTICULE
-    }
-
-    public static class Case {
-        private TypeCase type;
-        private Particule particule;
-
-        public Case(TypeCase type) {
-            this.type = type;
-            this.particule = null;
-        }
-
-        public TypeCase getType() {
-            return type;
-        }
-
-        public void setType(TypeCase type) {
-            this.type = type;
-        }
-
-        public Particule getParticule() {
-            return particule;
-        }
-
-        public void setParticule(Particule p) {
-            this.particule = p;
-            this.type = (p == null) ? TypeCase.VIDE : TypeCase.PARTICULE;
-        }
-    }
-
     public CarteJeu(int largeur, int hauteur) {
         this.largeur = largeur;
         this.hauteur = hauteur;
@@ -51,7 +18,7 @@ public class CarteJeu {
     private void initialiserVide() {
         for (int y = 0; y < hauteur; y++) {
             for (int x = 0; x < largeur; x++) {
-                cases[y][x] = new Case(TypeCase.VIDE);
+                cases[y][x] = new Case(Case.TypeCase.VIDE);
             }
         }
     }
@@ -73,7 +40,7 @@ public class CarteJeu {
 
     public boolean estLibre(int x, int y) {
         Case c = getCase(x, y);
-        return c != null && c.getType() == TypeCase.VIDE;
+        return c != null && c.getType() == Case.TypeCase.VIDE;
     }
 
     public List<Case> trouverVoisinsLibres(int x, int y) {
@@ -84,11 +51,14 @@ public class CarteJeu {
         for (int i : dx) {
             for (int j : dy) {
                 if (i == 0 && j == 0)
-                    continue; // ignore case actuelle
+                    continue; // ignore la case actuelle
                 int nx = x + i;
                 int ny = y + j;
-                if (estLibre(nx, ny)) {
-                    voisins.add(getCase(nx, ny));
+
+                if (nx >= 0 && nx < largeur && ny >= 0 && ny < hauteur) {
+                    if (estLibre(nx, ny)) {
+                        voisins.add(getCase(nx, ny));
+                    }
                 }
             }
         }
@@ -96,28 +66,32 @@ public class CarteJeu {
     }
 
     public boolean placerParticule(int x, int y, Particule p) {
+        if (x < 0 || x >= largeur || y < 0 || y >= hauteur)
+            return false; // hors limite
         Case c = getCase(x, y);
-        if (c != null && c.getType() == TypeCase.VIDE) {
+        if (c != null && c.getType() == Case.TypeCase.VIDE) {
             c.setParticule(p);
             return true;
         }
-        return false; // on a pas place particule
+        return false; // pas placee
     }
 
     public void retirerParticule(int x, int y) {
         Case c = getCase(x, y);
-        if (c != null && c.getType() == TypeCase.PARTICULE) {
+        if (c != null && c.getType() == Case.TypeCase.PARTICULE) {
             c.setParticule(null);
         }
     }
 
     public boolean placerObstacle(int x, int y) {
+        if (x < 0 || x >= largeur || y < 0 || y >= hauteur)
+            return false;
+
         Case c = getCase(x, y);
-        if (c != null && c.getType() != TypeCase.PARTICULE) {
-            c.setType(TypeCase.OBSTACLE);
+        if (c != null && c.getType() != Case.TypeCase.PARTICULE) {
+            c.setType(Case.TypeCase.OBSTACLE);
             return true;
         }
-        return false; // on met pas l obstacle si la particule est la
+        return false; // obstacle non placee
     }
-
 }
