@@ -1,5 +1,8 @@
 package model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class CarteJeu {
     private final int largeur;
     private final int hauteur;
@@ -67,4 +70,54 @@ public class CarteJeu {
         }
         return cases[y][x];
     }
+
+    public boolean estLibre(int x, int y) {
+        Case c = getCase(x, y);
+        return c != null && c.getType() == TypeCase.VIDE;
+    }
+
+    public List<Case> trouverVoisinsLibres(int x, int y) {
+        List<Case> voisins = new ArrayList<>();
+        int[] dx = { -1, 0, 1 };
+        int[] dy = { -1, 0, 1 };
+
+        for (int i : dx) {
+            for (int j : dy) {
+                if (i == 0 && j == 0)
+                    continue; // ignore case actuelle
+                int nx = x + i;
+                int ny = y + j;
+                if (estLibre(nx, ny)) {
+                    voisins.add(getCase(nx, ny));
+                }
+            }
+        }
+        return voisins;
+    }
+
+    public boolean placerParticule(int x, int y, Particule p) {
+        Case c = getCase(x, y);
+        if (c != null && c.getType() == TypeCase.VIDE) {
+            c.setParticule(p);
+            return true;
+        }
+        return false; // on a pas place particule
+    }
+
+    public void retirerParticule(int x, int y) {
+        Case c = getCase(x, y);
+        if (c != null && c.getType() == TypeCase.PARTICULE) {
+            c.setParticule(null);
+        }
+    }
+
+    public boolean placerObstacle(int x, int y) {
+        Case c = getCase(x, y);
+        if (c != null && c.getType() != TypeCase.PARTICULE) {
+            c.setType(TypeCase.OBSTACLE);
+            return true;
+        }
+        return false; // on met pas l obstacle si la particule est la
+    }
+
 }

@@ -37,4 +37,5 @@ public class Particule {
     public void augmenterEnergie(int quantite) {
         setEnergie(energie + quantite);
     }
+
 }
