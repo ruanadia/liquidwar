@@ -1,4 +1,4 @@
-package model;
+package fr.uparis.informatique.liquidwar.model;
 
 public class Cible {
     private int x;

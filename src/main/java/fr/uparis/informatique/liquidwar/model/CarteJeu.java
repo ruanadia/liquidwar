@@ -1,4 +1,4 @@
-package model;
+package fr.uparis.informatique.liquidwar.model;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,13 +1,15 @@
-package controleur;
+package fr.uparis.informatique.liquidwar.controleur;
 
-import model.CarteJeu;
-import model.Case;
-import model.Equipe;
-import model.Cible;
+
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+
+import fr.uparis.informatique.liquidwar.model.CarteJeu;
+import fr.uparis.informatique.liquidwar.model.Case;
+import fr.uparis.informatique.liquidwar.model.Cible;
+import fr.uparis.informatique.liquidwar.model.Equipe;
 
 public class GestionJeu {
     private final CarteJeu carte;

@@ -1,4 +1,4 @@
-package model;
+package fr.uparis.informatique.liquidwar.model;
 
 public class Case {
     public enum TypeCase {
