@@ -8,6 +8,8 @@ import java.util.concurrent.Executors;
 
 import fr.uparis.informatique.liquidwar.model.CarteJeu;
 import fr.uparis.informatique.liquidwar.model.Equipe;
+import fr.uparis.informatique.liquidwar.model.Particule;
+import fr.uparis.informatique.liquidwar.model.Position;
 
 public class MoteurJeu {
     private final CarteJeu carte;
@@ -56,5 +58,47 @@ public class MoteurJeu {
         }
         // puis appel methode pour deplacer les particules
 
+    }
+
+    private void deplacerParticules(){
+        int largeur=carte.getLargeur();
+        int hauteur=carte.getHauteur();
+
+        for(Equipe equipe:equipes){
+            int[][] gradient=equipe.getGradient();
+            if(gradient==null) continue;
+
+            for(Particule p:new ArrayList<>(equipe.getParticules())){
+                Position curPos=p.getPosition();
+                int x=curPos.x();
+                int y=curPos.y();
+
+                int bestX=x;
+                int bestY=y;
+                int bestDist=gradient[y][x];
+
+                int[][] directions={{0,-1},{0,1},{-1,0},{1,0}};
+                for(int[] dir:directions){
+                    int nx=x+dir[0];
+                    int ny=y+dir[1];
+
+                    if(nx>=0&&nx<largeur&&ny>=0&&ny<hauteur){
+                        int valVoisin=gradient[ny][nx];
+                        if(valVoisin!=-1&&valVoisin<bestDist){
+                            bestDist=valVoisin;
+                            bestX=nx;
+                            bestY=ny;
+                        }
+                    }
+                }
+                if(bestX!=x||bestY!=y){
+                    //Methode pr faire le deplacement (todo)
+                }
+            }
+        }
+    }
+
+    private void deplacement(){
+        //todo gerer les mouvements sur la carte, les collisions 
     }
 }
