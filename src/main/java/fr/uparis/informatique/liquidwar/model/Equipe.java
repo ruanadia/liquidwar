@@ -10,6 +10,7 @@ public class Equipe {
     private final int couleur;
     private Cible cible;
     private final List<Particule> particules;
+    private volatile int[][] gradient;
 
     public Equipe(int numero, String nom, int couleur, Cible cible) {
         this.numero = numero;
@@ -49,5 +50,13 @@ public class Equipe {
 
     public int getNumero() {
         return numero;
+    }
+
+    public int[][] getGradient(){
+        return gradient;
+    }
+
+    public void setGradient(int[][] gradient){
+        this.gradient=gradient;
     }
 }

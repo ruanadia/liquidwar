@@ -18,7 +18,7 @@ public class GestionJeu {   //on peut peut être renommée cette classe en Calcu
     //private final Equipe[] equipes;
     //private int[][] gradient; // tab de distances pour le gradient
 
-    public GestionJeu(CarteJeu carte, Equipe[] equipes) {
+    public GestionJeu(CarteJeu carte) {
         this.carte = carte;
 
         //this.equipes = equipes;
