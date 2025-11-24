@@ -1,33 +1,26 @@
 package fr.uparis.informatique.liquidwar.model;
 
 public class Cible {
-    private int x;
-    private int y;
+    private volatile Position pos;//volatile pour que changement soit visible pour les threads
 
     public Cible(int x, int y) {
-        this.x = x;
-        this.y = y;
+        this.pos=new Position(x,y);
     }
 
-    public int getX() {
-        return x;
-    }
-
-    public int getY() {
-        return y;
-    }
-
-    public void setX(int x) {
-        this.x = x;
-    }
-
-    public void setY(int y) {
-        this.y = y;
+    public Position getPosition(){
+        return pos;
     }
 
     public void setPosition(int x, int y) {
-        this.x = x;
-        this.y = y;
+        this.pos=new Position(x,y);
+    }
+
+    public int getX() {
+        return pos.x();
+    }
+
+    public int getY() {
+        return pos.y();
     }
 
 }
