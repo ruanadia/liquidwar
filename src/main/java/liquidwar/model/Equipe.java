@@ -1,4 +1,4 @@
-package fr.uparis.informatique.liquidwar.model;
+package liquidwar.model;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -52,11 +52,11 @@ public class Equipe {
         return numero;
     }
 
-    public int[][] getGradient(){
+    public int[][] getGradient() {
         return gradient;
     }
 
-    public void setGradient(int[][] gradient){
-        this.gradient=gradient;
+    public void setGradient(int[][] gradient) {
+        this.gradient = gradient;
     }
 }

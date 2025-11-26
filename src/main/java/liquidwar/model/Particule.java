@@ -1,4 +1,4 @@
-package fr.uparis.informatique.liquidwar.model;
+package liquidwar.model;
 
 public class Particule {
     private final Equipe equipe;
@@ -7,12 +7,12 @@ public class Particule {
     private final int energieMax;
     private Position pos;
 
-    public Particule(Equipe equipe, Position position,int energieInitiale, int energieMin, int energieMax) {
+    public Particule(Equipe equipe, Position position, int energieInitiale, int energieMin, int energieMax) {
         this.equipe = equipe;
         this.energie = energieInitiale;
         this.energieMin = energieMin;
         this.energieMax = energieMax;
-        this.pos= position;
+        this.pos = position;
     }
 
     public Equipe getEquipe() {
@@ -40,12 +40,12 @@ public class Particule {
         setEnergie(energie + quantite);
     }
 
-    public Position getPosition(){
+    public Position getPosition() {
         return pos;
     }
 
-    public void setPosition(Position position){
-        this.pos=position;
+    public void setPosition(Position position) {
+        this.pos = position;
     }
 
 }
