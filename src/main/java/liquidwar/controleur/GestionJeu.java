@@ -4,11 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
-import fr.uparis.informatique.liquidwar.model.CarteJeu;
-import fr.uparis.informatique.liquidwar.model.Case;
-import fr.uparis.informatique.liquidwar.model.Cible;
-import fr.uparis.informatique.liquidwar.model.Equipe;
-import fr.uparis.informatique.liquidwar.model.Position;
+import fr.uparis.informatique.liquidwar.model.*;
 
 public class GestionJeu {   //on peut peut être renommée cette classe en CalculateurGradient
     private final CarteJeu carte;
