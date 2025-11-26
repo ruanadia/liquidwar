@@ -1,4 +1,4 @@
-package fr.uparis.informatique.liquidwar.model;
+package liquidwar.model;
 
 public class Particule {
     private final Equipe equipe;

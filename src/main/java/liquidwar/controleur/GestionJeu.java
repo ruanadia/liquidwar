@@ -1,10 +1,11 @@
-package fr.uparis.informatique.liquidwar.controleur;
+package liquidwar.controleur;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
-import fr.uparis.informatique.liquidwar.model.*;
+import liquidwar.model.*;
+
 
 public class GestionJeu {   //on peut peut être renommée cette classe en CalculateurGradient
     private final CarteJeu carte;

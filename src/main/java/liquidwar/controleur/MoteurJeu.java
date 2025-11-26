@@ -1,4 +1,4 @@
-package fr.uparis.informatique.liquidwar.controleur;
+package liquidwar.controleur;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,10 +6,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import fr.uparis.informatique.liquidwar.model.CarteJeu;
-import fr.uparis.informatique.liquidwar.model.Equipe;
-import fr.uparis.informatique.liquidwar.model.Particule;
-import fr.uparis.informatique.liquidwar.model.Position;
+import liquidwar.model.*;
 
 public class MoteurJeu {
     private final CarteJeu carte;

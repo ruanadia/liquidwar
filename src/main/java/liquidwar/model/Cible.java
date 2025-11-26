@@ -1,4 +1,4 @@
-package fr.uparis.informatique.liquidwar.model;
+package liquidwar.model;
 
 public class Cible {
     private volatile Position pos;//volatile pour que changement soit visible pour les threads
