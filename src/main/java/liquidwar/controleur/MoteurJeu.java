@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import liquidwar.model.CarteJeu;
 import liquidwar.model.Equipe;
@@ -15,9 +16,8 @@ public class MoteurJeu {
     private final CarteJeu carte;
     private final List<Equipe> equipes;
     private final GestionJeu gradient;
-    private boolean enCours = true;
-    private final ExecutorService executeur = Executors.newVirtualThreadPerTaskExecutor(); // executeur pour les threads
-                                                                                           // virtuels
+    private volatile boolean enCours = true; // volatile pour visibilite entre threads
+    private final ExecutorService executeur = Executors.newVirtualThreadPerTaskExecutor();
 
     public MoteurJeu(CarteJeu carte, List<Equipe> equipes) {
         this.carte = carte;
@@ -25,24 +25,27 @@ public class MoteurJeu {
         this.gradient = new GestionJeu(carte);
     }
 
-    public void demarrer() { // boucle principale du jeu qui est lancé sur un thread
+    public void demarrer() {
         Thread.ofVirtual().start(() -> {
-            while ((enCours)) {
+            while (enCours) {
                 long debut = System.currentTimeMillis();
                 update();
 
                 long duree = System.currentTimeMillis() - debut;
-                if (duree < 16) {
+                if (duree < 16) { // pour ~60 FPS = 16ms par frame
                     try {
                         Thread.sleep(16 - duree);
                     } catch (InterruptedException e) {
                         System.err.print(e.getMessage());
+                        Thread.currentThread().interrupt();
                     }
                 }
             }
+            arreterExecuteur();
         });
     }
 
+    // calcul des gradients + deplace lesparticules
     private void update() {
         List<Callable<Void>> tachesCalcul = new ArrayList<>();
         for (Equipe equipe : equipes) {
@@ -53,12 +56,12 @@ public class MoteurJeu {
             });
         }
         try {
-            executeur.invokeAll(tachesCalcul); // attente du calcul de tous les gradient avt mouvement partivules
+            executeur.invokeAll(tachesCalcul);
+            deplacerParticules();
         } catch (InterruptedException e) {
             System.out.println(e.getMessage());
+            Thread.currentThread().interrupt();
         }
-        // puis appel methode pour deplacer les particules
-
     }
 
     private void deplacerParticules() {
@@ -87,20 +90,39 @@ public class MoteurJeu {
                     if (nx >= 0 && nx < largeur && ny >= 0 && ny < hauteur) {
                         int valVoisin = gradient[ny][nx];
                         if (valVoisin != -1 && valVoisin < bestDist) {
-                            bestDist = valVoisin;
-                            bestX = nx;
-                            bestY = ny;
+                            if (carte.estLibre(nx, ny)) {
+                                bestDist = valVoisin;
+                                bestX = nx;
+                                bestY = ny;
+                            }
                         }
                     }
                 }
                 if (bestX != x || bestY != y) {
-                    // Methode pr faire le deplacement (todo)
+                    carte.retirerParticule(x, y); // retirer à l'ancienne position
+                    p.setPosition(bestX, bestY);
+                    carte.placerParticule(bestX, bestY, p);
                 }
             }
         }
     }
 
-    private void deplacement() {
-        // todo gerer les mouvements sur la carte, les collisions
+    private void arreterExecuteur() { // stop l executor et libere les ressources
+        executeur.shutdown();
+        try {
+            if (!executeur.awaitTermination(5, TimeUnit.SECONDS)) {
+                executeur.shutdownNow();
+                if (!executeur.awaitTermination(5, TimeUnit.SECONDS)) {
+                    System.err.println("executeur n'a pas pu etre arrete");
+                }
+            }
+        } catch (InterruptedException e) {
+            executeur.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    public void arreter() {
+        enCours = false;
     }
 }

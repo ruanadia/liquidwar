@@ -48,4 +48,8 @@ public class Particule {
         this.pos = position;
     }
 
+    public void setPosition(int bestX, int bestY) {
+        this.pos = new Position(bestX, bestY);
+    }
+
 }
