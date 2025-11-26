@@ -59,4 +59,8 @@ public class Equipe {
     public void setGradient(int[][] gradient) {
         this.gradient = gradient;
     }
+
+    public int getId() {
+        return numero;
+    }
 }

@@ -8,6 +8,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import liquidwar.model.CarteJeu;
+import liquidwar.model.Cible;
 import liquidwar.model.Equipe;
 import liquidwar.model.Particule;
 import liquidwar.model.Position;
@@ -65,44 +66,77 @@ public class MoteurJeu {
     }
 
     private void deplacerParticules() {
-        int largeur = carte.getLargeur();
-        int hauteur = carte.getHauteur();
-
         for (Equipe equipe : equipes) {
-            int[][] gradient = equipe.getGradient();
-            if (gradient == null)
-                continue;
+            Cible cible = equipe.getCible();
+            float cibleX = (float) cible.getPosition().x();
+            float cibleY = (float) cible.getPosition().y();
 
             for (Particule p : new ArrayList<>(equipe.getParticules())) {
-                Position curPos = p.getPosition();
-                int x = curPos.x();
-                int y = curPos.y();
 
-                int bestX = x;
-                int bestY = y;
-                int bestDist = gradient[y][x];
+                // on sauve l'ancienne position
+                int oldX = Math.round(p.getX());
+                int oldY = Math.round(p.getY());
 
-                int[][] directions = { { 0, -1 }, { 0, 1 }, { -1, 0 }, { 1, 0 } };
-                for (int[] dir : directions) {
-                    int nx = x + dir[0];
-                    int ny = y + dir[1];
+                float dx = cibleX - p.getX();
+                float dy = cibleY - p.getY();
+                float distance = (float) Math.sqrt(dx * dx + dy * dy);
 
-                    if (nx >= 0 && nx < largeur && ny >= 0 && ny < hauteur) {
-                        int valVoisin = gradient[ny][nx];
-                        if (valVoisin != -1 && valVoisin < bestDist) {
-                            if (carte.estLibre(nx, ny)) {
-                                bestDist = valVoisin;
-                                bestX = nx;
-                                bestY = ny;
-                            }
+                if (distance > 0) {
+                    float vitesse = 0.1f;
+
+                    float vx = vitesse * dx / distance;
+                    float vy = vitesse * dy / distance;
+
+                    // pousser les particules voisines
+                    float repelX = 0, repelY = 0;
+                    for (Particule autre : equipe.getParticules()) {
+                        if (autre == p)
+                            continue;
+                        float diffX = p.getX() - autre.getX();
+                        float diffY = p.getY() - autre.getY();
+                        float distPart = (float) Math.sqrt(diffX * diffX + diffY * diffY);
+                        if (distPart > 0 && distPart < 1.0f) {
+                            repelX += diffX / distPart / distPart;
+                            repelY += diffY / distPart / distPart;
                         }
                     }
+
+                    // hasard pour eviter que les particules restent collees
+                    double angle = 2 * Math.PI * Math.random();
+                    float randomX = 0.01f * (float) Math.cos(angle);
+                    float randomY = 0.01f * (float) Math.sin(angle);
+
+                    vx += repelX + randomX;
+                    vy += repelY + randomY;
+
+                    // vitesse max on borne
+                    float vitesseMax = 0.2f;
+                    float vitesseActuelle = (float) Math.sqrt(vx * vx + vy * vy);
+                    if (vitesseActuelle > vitesseMax) {
+                        vx = vx / vitesseActuelle * vitesseMax;
+                        vy = vy / vitesseActuelle * vitesseMax;
+                    }
+
+                    p.setVitesse(vx, vy); // maj de la vitesse
+                    p.updatePosition();
+
+                    float nx = Math.max(0, Math.min(carte.getLargeur() - 1, p.getX()));// respect des limites de la
+                                                                                       // carte
+                    float ny = Math.max(0, Math.min(carte.getHauteur() - 1, p.getY()));
+                    p.setPosition(nx, ny);
+
+                    carte.mettreAJourParticule(p, oldX, oldY); // maj de la carte
+
                 }
-                if (bestX != x || bestY != y) {
-                    carte.retirerParticule(x, y); // retirer à l'ancienne position
-                    p.setPosition(bestX, bestY);
-                    carte.placerParticule(bestX, bestY, p);
-                }
+            }
+        }
+    }
+
+    public void setCibleEquipe(int idEquipe, float x, float y) {
+        for (Equipe e : equipes) {
+            if (e.getId() == idEquipe) { // <-- selon ton modèle Equipe
+                e.getCible().setPosition(x, y);
+                return;
             }
         }
     }
