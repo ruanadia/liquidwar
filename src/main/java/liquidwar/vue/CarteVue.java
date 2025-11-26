@@ -28,7 +28,6 @@ public class CarteVue extends JPanel {
         int hauteurPx = carte.getHauteur() * tailleCase;
         setPreferredSize(new Dimension(largeurPx, hauteurPx));
 
-        // suivi de la souris
         addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseMoved(MouseEvent e) {
@@ -38,7 +37,6 @@ public class CarteVue extends JPanel {
             }
         });
 
-        // clic de la souris pour définir la cible
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {

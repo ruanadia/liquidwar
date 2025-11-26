@@ -35,31 +35,25 @@ public class FenetreJeu extends JFrame {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                CarteJeu carte = new CarteJeu(80, 60);
+        SwingUtilities.invokeLater(() -> {
+            CarteJeu carte = new CarteJeu(200, 150);
 
-                Equipe equipe1 = new Equipe(1, "Rouge", 0xFF0000, new liquidwar.model.Cible(70, 50));
+            Equipe equipe1 = new Equipe(1, "Rouge", 0xFF0000, new liquidwar.model.Cible(180, 140));
 
-                Particule p1 = new Particule(equipe1, 10.0f, 10.0f, 100, 0, 100);
-                Particule p2 = new Particule(equipe1, 11.0f, 10.5f, 100, 0, 100);
-                Particule p3 = new Particule(equipe1, 12.3f, 10.8f, 100, 0, 100);
-
-                equipe1.ajouterParticule(p1);
-                equipe1.ajouterParticule(p2);
-                equipe1.ajouterParticule(p3);
-
-                carte.placerParticule(10, 10, p1);
-                carte.placerParticule(11, 10, p2);
-                carte.placerParticule(12, 10, p3);
-
-                List<Equipe> equipes = List.of(equipe1);
-
-                MoteurJeu moteur = new MoteurJeu(carte, equipes);
-                FenetreJeu fenetre = new FenetreJeu(carte, equipes, moteur);
-                fenetre.lancer();
+            for (int i = 0; i < 500; i++) {
+                float x = (float) (Math.random() * carte.getLargeur());
+                float y = (float) (Math.random() * carte.getHauteur());
+                Particule p = new Particule(equipe1, x, y, 100, 0, 100);
+                equipe1.ajouterParticule(p);
+                carte.placerParticule(Math.round(x), Math.round(y), p);
             }
+
+            List<Equipe> equipes = List.of(equipe1);
+
+            // moteur et fenetre
+            MoteurJeu moteur = new MoteurJeu(carte, equipes);
+            FenetreJeu fenetre = new FenetreJeu(carte, equipes, moteur);
+            fenetre.lancer();
         });
     }
 
