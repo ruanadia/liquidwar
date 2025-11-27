@@ -71,70 +71,78 @@ public class MoteurJeu {
             float cibleX = (float) cible.getPosition().x();
             float cibleY = (float) cible.getPosition().y();
 
-            for (Particule p : new ArrayList<>(equipe.getParticules())) {
+            float centreX = 0, centreY = 0;
+            for (Particule p : equipe.getParticules()) {
+                centreX += p.getX();
+                centreY += p.getY();
+            }
+            int nbParticules = equipe.getParticules().size();
+            if (nbParticules > 0) {
+                centreX /= nbParticules;
+                centreY /= nbParticules;
+            }
 
-                // on sauve l'ancienne position
+            for (Particule p : new ArrayList<>(equipe.getParticules())) {
                 int oldX = Math.round(p.getX());
                 int oldY = Math.round(p.getY());
 
+                // deplace vers la cible
                 float dx = cibleX - p.getX();
                 float dy = cibleY - p.getY();
                 float distance = (float) Math.sqrt(dx * dx + dy * dy);
 
+                float vx = 0, vy = 0;
                 if (distance > 0) {
-                    float vitesse = 0.1f;
-
-                    float vx = vitesse * dx / distance;
-                    float vy = vitesse * dy / distance;
-
-                    // pousser les particules voisines
-                    float repelX = 0, repelY = 0;
-                    for (Particule autre : equipe.getParticules()) {
-                        if (autre == p)
-                            continue;
-                        float diffX = p.getX() - autre.getX();
-                        float diffY = p.getY() - autre.getY();
-                        float distPart = (float) Math.sqrt(diffX * diffX + diffY * diffY);
-                        if (distPart > 0 && distPart < 1.0f) {
-                            repelX += diffX / distPart / distPart;
-                            repelY += diffY / distPart / distPart;
-                        }
-                    }
-
-                    // hasard pour eviter que les particules restent collees
-                    double angle = 2 * Math.PI * Math.random();
-                    float randomX = 0.01f * (float) Math.cos(angle);
-                    float randomY = 0.01f * (float) Math.sin(angle);
-
-                    vx += repelX + randomX;
-                    vy += repelY + randomY;
-
-                    // vitesse max on borne
-                    float vitesseMax = 0.2f;
-                    float vitesseActuelle = (float) Math.sqrt(vx * vx + vy * vy);
-                    if (vitesseActuelle > vitesseMax) {
-                        vx = vx / vitesseActuelle * vitesseMax;
-                        vy = vy / vitesseActuelle * vitesseMax;
-                    }
-
-                    p.setVitesse(vx, vy); // maj de la vitesse
-                    p.updatePosition();
-
-                    float nx = Math.max(0, Math.min(carte.getLargeur() - 1, p.getX()));// respect des limites de la
-                                                                                       // carte
-                    float ny = Math.max(0, Math.min(carte.getHauteur() - 1, p.getY()));
-                    p.setPosition(nx, ny);
-
-                    carte.mettreAJourParticule(p, oldX, oldY); // maj de la carte
-
+                    float vitesse = 0.25f; // vitesse de base un peu plus rapide
+                    vx = vitesse * dx / distance;
+                    vy = vitesse * dy / distance;
                 }
+
+                // repulsiondes particules proches
+                float repelX = 0, repelY = 0;
+                float distSeuilRepulsion = 0.45f; // plus petit = particules très serrées
+                for (Particule autre : equipe.getParticules()) {
+                    if (autre == p)
+                        continue;
+                    float diffX = p.getX() - autre.getX();
+                    float diffY = p.getY() - autre.getY();
+                    float distPart = (float) Math.sqrt(diffX * diffX + diffY * diffY);
+                    if (distPart > 0 && distPart < distSeuilRepulsion) {
+                        repelX += diffX / distPart / distPart * 0.5f; // repulsion plus faible
+                        repelY += diffY / distPart / distPart * 0.5f;
+                    }
+                }
+
+                double angle = 2 * Math.PI * Math.random();
+                float randomX = 0.003f * (float) Math.cos(angle);
+                float randomY = 0.003f * (float) Math.sin(angle);
+
+                vx += repelX + randomX;
+                vy += repelY + randomY;
+
+                float vitesseMax = 0.35f;
+                float vitesseActuelle = (float) Math.sqrt(vx * vx + vy * vy);
+                if (vitesseActuelle > vitesseMax) {
+                    vx = vx / vitesseActuelle * vitesseMax;
+                    vy = vy / vitesseActuelle * vitesseMax;
+                }
+
+                p.setVitesse(vx, vy);
+                p.updatePosition();
+
+                // limites de la carte
+                float nx = Math.max(0, Math.min(carte.getLargeur() - 1, p.getX()));
+                float ny = Math.max(0, Math.min(carte.getHauteur() - 1, p.getY()));
+                p.setPosition(nx, ny);
+
+                carte.mettreAJourParticule(p, oldX, oldY);
             }
         }
     }
 
     public void setCibleEquipe(int idEquipe, float x, float y) {
         for (Equipe e : equipes) {
-            if (e.getId() == idEquipe) { // <-- selon ton modèle Equipe
+            if (e.getId() == idEquipe) {
                 e.getCible().setPosition(x, y);
                 return;
             }

@@ -52,6 +52,7 @@ public class CarteVue extends JPanel {
         super.paintComponent(g);
         g.setColor(Color.WHITE);
         g.fillRect(0, 0, getWidth(), getHeight());
+        int pixelSize = 2; // taille mini pour les particules
 
         // dessiner toutes les particules
         for (int y = 0; y < carte.getHauteur(); y++) {
@@ -61,7 +62,7 @@ public class CarteVue extends JPanel {
                     g.setColor(new Color(p.getCouleur()));
                     int px = Math.round(p.getX() * tailleCase);
                     int py = Math.round(p.getY() * tailleCase);
-                    g.fillOval(px, py, tailleCase, tailleCase);
+                    g.fillRect(px, py, pixelSize, pixelSize);
                 }
             }
         }

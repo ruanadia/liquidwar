@@ -71,7 +71,7 @@ public class CarteJeu {
         Case c = getCase(x, y);
         if (c != null && c.getType() == Case.TypeCase.VIDE) {
             c.setParticule(p);
-            c.setType(Case.TypeCase.PARTICULE); // <-- à ajouter
+            c.setType(Case.TypeCase.PARTICULE);
             return true;
         }
         return false;
@@ -81,7 +81,7 @@ public class CarteJeu {
         Case c = getCase(x, y);
         if (c != null && c.getType() == Case.TypeCase.PARTICULE) {
             c.setParticule(null);
-            c.setType(Case.TypeCase.VIDE); // <-- à ajouter
+            c.setType(Case.TypeCase.VIDE);
         }
     }
 

@@ -40,14 +40,24 @@ public class FenetreJeu extends JFrame {
 
             Equipe equipe1 = new Equipe(1, "Rouge", 0xFF0000, new liquidwar.model.Cible(180, 140));
 
-            for (int i = 0; i < 500; i++) {
-                float x = (float) (Math.random() * carte.getLargeur());
-                float y = (float) (Math.random() * carte.getHauteur());
+            float centreX = 50; // centre du groupe sur la carte
+            float centreY = 50;
+            float rayonX = 20; // rayon de dispersion
+            float rayonY = 20;
+
+            int nbParticules = 1500;
+
+            for (int i = 0; i < nbParticules; i++) {
+                float angle = (float) (2 * Math.PI * Math.random());
+                float rX = (float) (rayonX * Math.random());
+                float rY = (float) (rayonY * Math.random());
+                float x = centreX + rX * (float) Math.cos(angle);
+                float y = centreY + rY * (float) Math.sin(angle);
+
                 Particule p = new Particule(equipe1, x, y, 100, 0, 100);
                 equipe1.ajouterParticule(p);
                 carte.placerParticule(Math.round(x), Math.round(y), p);
             }
-
             List<Equipe> equipes = List.of(equipe1);
 
             // moteur et fenetre
