@@ -50,7 +50,7 @@ public class CarteVue extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        g.setColor(Color.WHITE);
+        g.setColor(Color.BLACK);
         g.fillRect(0, 0, getWidth(), getHeight());
         int pixelSize = 2; // taille mini pour les particules
 
