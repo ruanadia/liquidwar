@@ -7,15 +7,15 @@ import javax.swing.Timer;
 
 import liquidwar.controleur.MoteurJeu;
 import liquidwar.model.CarteJeu;
+import liquidwar.model.Cible;
 import liquidwar.model.Equipe;
 import liquidwar.model.Particule;
-import liquidwar.model.Position;
 
 public class FenetreJeu extends JFrame {
     private final CarteVue carteVue;
     private final MoteurJeu moteur;
 
-    public FenetreJeu(CarteJeu carte, List<Equipe> equipes, MoteurJeu moteur) {
+    public FenetreJeu(CarteJeu carte, List<Equipe> equipes, MoteurJeu moteur, Cible cible) {
         super("Liquid War");
         this.moteur = moteur;
         this.carteVue = new CarteVue(carte, 10, moteur, 1); // équipe 1 suit la souris
@@ -38,17 +38,20 @@ public class FenetreJeu extends JFrame {
         SwingUtilities.invokeLater(() -> {
             CarteJeu carte = new CarteJeu(200, 150);
 
-            Equipe equipe1 = new Equipe(1, "Rouge", 0xFF0000, new liquidwar.model.Cible(180, 140));
+            // creer cible
+            Cible cible = new Cible(50, 50);
 
-            float centreX = 50; // centre du groupe sur la carte
+            Equipe equipe1 = new Equipe(1, "Rouge", 0xFF0000, cible);
+
+            // nuage initial de particules
+            float centreX = 50;
             float centreY = 50;
-            float rayonX = 20; // rayon de dispersion
+            float rayonX = 20;
             float rayonY = 20;
-
             int nbParticules = 1500;
 
             for (int i = 0; i < nbParticules; i++) {
-                float angle = (float) (2 * Math.PI * Math.random());
+                double angle = 2 * Math.PI * Math.random();
                 float rX = (float) (rayonX * Math.random());
                 float rY = (float) (rayonY * Math.random());
                 float x = centreX + rX * (float) Math.cos(angle);
@@ -58,13 +61,12 @@ public class FenetreJeu extends JFrame {
                 equipe1.ajouterParticule(p);
                 carte.placerParticule(Math.round(x), Math.round(y), p);
             }
+
             List<Equipe> equipes = List.of(equipe1);
 
-            // moteur et fenetre
             MoteurJeu moteur = new MoteurJeu(carte, equipes);
-            FenetreJeu fenetre = new FenetreJeu(carte, equipes, moteur);
+            FenetreJeu fenetre = new FenetreJeu(carte, equipes, moteur, cible);
             fenetre.lancer();
         });
     }
-
 }

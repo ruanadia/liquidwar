@@ -167,4 +167,13 @@ public class MoteurJeu {
     public void arreter() {
         enCours = false;
     }
+
+    public Cible getCibleEquipe(int idEquipe) {
+        for (Equipe e : equipes) {
+            if (e.getId() == idEquipe) {
+                return e.getCible();
+            }
+        }
+        return null;
+    }
 }
