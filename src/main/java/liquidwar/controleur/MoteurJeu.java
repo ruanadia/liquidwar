@@ -20,6 +20,9 @@ public class MoteurJeu {
     private volatile boolean enCours = true; // volatile pour visibilite entre threads
     private final ExecutorService executeur = Executors.newVirtualThreadPerTaskExecutor();
 
+    private volatile long debutPartie;
+    private final long DUREE_PARTIE=180_000;
+
     public MoteurJeu(CarteJeu carte, List<Equipe> equipes) {
         this.carte = carte;
         this.equipes = equipes;
@@ -27,8 +30,16 @@ public class MoteurJeu {
     }
 
     public void demarrer() {
+        this.debutPartie=System.currentTimeMillis();
         Thread.ofVirtual().start(() -> {
             while (enCours) {
+
+                if(getTempsRestant()<=0){
+                    arreter();
+                    System.out.println("fin de la partie");
+                    break;
+                }
+
                 long debut = System.currentTimeMillis();
                 update();
 
@@ -175,5 +186,11 @@ public class MoteurJeu {
             }
         }
         return null;
+    }
+
+    public long getTempsRestant() {
+        if(debutPartie==0) return DUREE_PARTIE;
+        long ecoule=System.currentTimeMillis()-debutPartie;
+        return Math.max(0, DUREE_PARTIE-ecoule);
     }
 }

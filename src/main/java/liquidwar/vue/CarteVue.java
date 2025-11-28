@@ -2,6 +2,8 @@ package liquidwar.vue;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -101,5 +103,26 @@ public class CarteVue extends JPanel {
             g2.setColor(Color.BLACK);
             g2.fillOval(cx - rayonInterieur, cy - rayonInterieur, 2 * rayonInterieur, 2 * rayonInterieur);
         }
+        dessinerTimer(g);
+    }
+
+    private void dessinerTimer(Graphics g){
+        long tmpsRestant=moteur.getTempsRestant();
+        long min=(tmpsRestant/1000)/60;
+        long sec=(tmpsRestant/1000)%60;
+        String txt=String.format("%02d:%02d",min,sec);
+
+        g.setFont(new Font("Monospaced",Font.BOLD,20));
+        g.setColor(Color.WHITE);
+
+        if(tmpsRestant<30000){ //si il reste moins de 30s
+            g.setColor(Color.RED);
+        }
+        FontMetrics mertrics=g.getFontMetrics();
+        int x=getWidth()-mertrics.stringWidth(txt)-10;
+        int y=mertrics.getHeight()+5;
+
+        g.drawString(txt, x, y);
+
     }
 }
