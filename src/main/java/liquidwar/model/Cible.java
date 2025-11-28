@@ -1,26 +1,33 @@
 package liquidwar.model;
 
 public class Cible {
-    private volatile Position pos;// volatile pour que changement soit visible pour les threads
+    private volatile float x;
+    private volatile float y;
 
     public Cible(int x, int y) {
-        this.pos = new Position(x, y);
+        this.x = x;
+        this.y = y;
     }
 
-    public Position getPosition() {
-        return pos;
+    public synchronized Position getPosition() {
+        return new Position(Math.round(x), Math.round(y));
     }
 
-    public void setPosition(int x, int y) {
-        this.pos = new Position(x, y);
+    public synchronized void setPosition(float x, float y) {
+        this.x = x;
+        this.y = y;
     }
 
-    public int getX() {
-        return pos.x();
+    public synchronized void setPosition(Position pos) {
+        this.x = pos.x();
+        this.y = pos.y();
     }
 
-    public int getY() {
-        return pos.y();
+    public synchronized float getX() {
+        return x;
     }
 
+    public synchronized float getY() {
+        return y;
+    }
 }
