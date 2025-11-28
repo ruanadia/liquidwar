@@ -1,7 +1,7 @@
 package liquidwar.model;
 
 public class Particule {
-    private Equipe equipe;
+    private final Equipe equipe;
     private int energie;
     private final int energieMin;
     private final int energieMax;
@@ -77,11 +77,6 @@ public class Particule {
     public void setPosition(Position pos) {
         this.x = pos.x();
         this.y = pos.y();
-    }
-
-    public void setEquipe(Equipe equipe2) {
-        this.equipe = equipe2;
-
     }
 
 }

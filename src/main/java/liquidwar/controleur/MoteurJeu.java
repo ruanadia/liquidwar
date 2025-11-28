@@ -63,12 +63,6 @@ public class MoteurJeu {
             System.out.println(e.getMessage());
             Thread.currentThread().interrupt();
         }
-        deplacerParticules();
-
-        if (finDePartie()) {
-            arreter();
-        }
-
     }
 
     private void deplacerParticules() {
@@ -141,41 +135,9 @@ public class MoteurJeu {
                 float ny = Math.max(0, Math.min(carte.getHauteur() - 1, p.getY()));
                 p.setPosition(nx, ny);
 
-                Particule autre = carte.getCase(Math.round(nx), Math.round(ny)).getParticule();
-                // particule e1 attaque particule e2
-                if (autre != null && autre.getEquipe() != p.getEquipe()) {
-                    int degats = 10;
-                    autre.setEnergie(Math.max(0, autre.getEnergie() - degats));
-                    if (autre.getEnergie() == 0) {
-                        autre.setEquipe(p.getEquipe()); // conversion
-                        autre.setEnergie(100);
-                    }
-                }
-
                 carte.mettreAJourParticule(p, oldX, oldY);
             }
         }
-
-    }
-
-    private boolean finDePartie() {
-        int nbEquipesVivantes = 0;
-        Equipe gagnante = null;
-        for (Equipe e : equipes) {
-            if (!e.getParticules().isEmpty()) {
-                nbEquipesVivantes++;
-                gagnante = e;
-            }
-        }
-        if (nbEquipesVivantes <= 1) {
-            if (gagnante != null) {
-                System.out.println("GAGNANT " + gagnante.getNom());
-            } else {
-                System.out.println("EGALITE");
-            }
-            return true;
-        }
-        return false;
     }
 
     public void setCibleEquipe(int idEquipe, float x, float y) {
