@@ -19,7 +19,7 @@ public class MoteurJeu {
     private final GestionJeu gradient;
     private volatile boolean enCours = true; // volatile pour visibilite entre threads
     private final ExecutorService executeur = Executors.newVirtualThreadPerTaskExecutor();
-    private volatile long debutPartie; // timestamp du début
+    private long debutPartie; // timestamp du début
     private final long dureeMaxMs = 180_000; // 3min environ
 
     public MoteurJeu(CarteJeu carte, List<Equipe> equipes) {
@@ -223,13 +223,5 @@ public class MoteurJeu {
             }
         }
         return null;
-    }
-
-    public long getTempsRestant(){
-        if(debutPartie==0){
-            return dureeMaxMs;
-        }
-        long tempsEcoule=System.currentTimeMillis()-debutPartie;
-        return Math.max(0, dureeMaxMs-tempsEcoule);
     }
 }
