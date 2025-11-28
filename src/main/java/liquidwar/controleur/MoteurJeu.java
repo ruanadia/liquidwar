@@ -19,6 +19,8 @@ public class MoteurJeu {
     private final GestionJeu gradient;
     private volatile boolean enCours = true; // volatile pour visibilite entre threads
     private final ExecutorService executeur = Executors.newVirtualThreadPerTaskExecutor();
+    private long debutPartie; // timestamp du début
+    private final long dureeMaxMs = 180_000; // 3min environ
 
     public MoteurJeu(CarteJeu carte, List<Equipe> equipes) {
         this.carte = carte;
@@ -27,10 +29,18 @@ public class MoteurJeu {
     }
 
     public void demarrer() {
+        debutPartie = System.currentTimeMillis();
+
         Thread.ofVirtual().start(() -> {
             while (enCours) {
                 long debut = System.currentTimeMillis();
                 update();
+                if (System.currentTimeMillis() - debutPartie >= dureeMaxMs) {
+                    System.out.println(" le temps est ecoulé "); // plus tard on en fera une fenetre
+                    finDePartie(); // pr donner resultat du jeu
+                    arreter(); // stoppe la boucle
+                    break;
+                }
 
                 long duree = System.currentTimeMillis() - debut;
                 if (duree < 16) { // pour ~60 FPS = 16ms par frame
