@@ -67,21 +67,19 @@ public class CarteJeu {
 
     public boolean placerParticule(int x, int y, Particule p) {
         if (x < 0 || x >= largeur || y < 0 || y >= hauteur)
-            return false;
+            return false; // hors limite
         Case c = getCase(x, y);
         if (c != null && c.getType() == Case.TypeCase.VIDE) {
             c.setParticule(p);
-            c.setType(Case.TypeCase.PARTICULE);
             return true;
         }
-        return false;
+        return false; // pas placee
     }
 
     public void retirerParticule(int x, int y) {
         Case c = getCase(x, y);
         if (c != null && c.getType() == Case.TypeCase.PARTICULE) {
             c.setParticule(null);
-            c.setType(Case.TypeCase.VIDE);
         }
     }
 
@@ -96,25 +94,4 @@ public class CarteJeu {
         }
         return false; // obstacle non placee
     }
-
-    public void mettreAJourParticule(Particule p, int oldX, int oldY) {
-
-        if (oldX >= 0 && oldX < largeur && oldY >= 0 && oldY < hauteur) {
-            Case ancienne = getCase(oldX, oldY);
-            if (ancienne != null && ancienne.getParticule() == p) {
-                ancienne.setParticule(null);
-            }
-        }
-
-        int nx = Math.round(p.getX());
-        int ny = Math.round(p.getY());
-
-        if (nx >= 0 && nx < largeur && ny >= 0 && ny < hauteur) {
-            Case nouvelle = getCase(nx, ny);
-            if (nouvelle != null && nouvelle.getType() == Case.TypeCase.VIDE) {
-                nouvelle.setParticule(p);
-            }
-        }
-    }
-
 }

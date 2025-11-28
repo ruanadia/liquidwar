@@ -1,23 +1,18 @@
 package liquidwar.model;
 
 public class Particule {
-    private Equipe equipe;
+    private final Equipe equipe;
     private int energie;
-    private final int energieMin;
+    private final int energieMin; // energie minimum possible
     private final int energieMax;
+    private Position pos;
 
-    private float x, y; // position flottante
-    private float vx, vy; // vitesse en pixels/frame ou unité arbitraire
-
-    public Particule(Equipe equipe, float x, float y, int energieInitiale, int energieMin, int energieMax) {
+    public Particule(Equipe equipe, Position position, int energieInitiale, int energieMin, int energieMax) {
         this.equipe = equipe;
-        this.x = x;
-        this.y = y;
-        this.vx = 0f;
-        this.vy = 0f;
         this.energie = energieInitiale;
         this.energieMin = energieMin;
         this.energieMax = energieMax;
+        this.pos = position;
     }
 
     public Equipe getEquipe() {
@@ -45,43 +40,12 @@ public class Particule {
         setEnergie(energie + quantite);
     }
 
-    public float getX() {
-        return x;
-    }
-
-    public float getY() {
-        return y;
-    }
-
-    public void setVitesse(float vx, float vy) {
-        this.vx = vx;
-        this.vy = vy;
-    }
-
-    public void updatePosition() {
-        this.x += vx;
-        this.y += vy;
-    }
-
     public Position getPosition() {
-        return new Position((int) x, (int) y);
+        return pos;
     }
 
-    // on fait deux methodes pour set la position, une avec des float et une avec
-    // Position
-    public void setPosition(float x, float y) {
-        this.x = x;
-        this.y = y;
-    }
-
-    public void setPosition(Position pos) {
-        this.x = pos.x();
-        this.y = pos.y();
-    }
-
-    public void setEquipe(Equipe equipe2) {
-        this.equipe = equipe2;
-
+    public void setPosition(Position position) {
+        this.pos = position;
     }
 
 }

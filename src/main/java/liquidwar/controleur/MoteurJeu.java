@@ -5,10 +5,8 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import liquidwar.model.CarteJeu;
-import liquidwar.model.Cible;
 import liquidwar.model.Equipe;
 import liquidwar.model.Particule;
 import liquidwar.model.Position;
@@ -17,10 +15,9 @@ public class MoteurJeu {
     private final CarteJeu carte;
     private final List<Equipe> equipes;
     private final GestionJeu gradient;
-    private volatile boolean enCours = true; // volatile pour visibilite entre threads
-    private final ExecutorService executeur = Executors.newVirtualThreadPerTaskExecutor();
-    private long debutPartie; // timestamp du début
-    private final long dureeMaxMs = 180_000; // 3min environ
+    private boolean enCours = true;
+    private final ExecutorService executeur = Executors.newVirtualThreadPerTaskExecutor(); // executeur pour les threads
+                                                                                           // virtuels
 
     public MoteurJeu(CarteJeu carte, List<Equipe> equipes) {
         this.carte = carte;
@@ -28,35 +25,24 @@ public class MoteurJeu {
         this.gradient = new GestionJeu(carte);
     }
 
-    public void demarrer() {
-        debutPartie = System.currentTimeMillis();
-
+    public void demarrer() { // boucle principale du jeu qui est lancé sur un thread
         Thread.ofVirtual().start(() -> {
-            while (enCours) {
+            while ((enCours)) {
                 long debut = System.currentTimeMillis();
                 update();
-                if (System.currentTimeMillis() - debutPartie >= dureeMaxMs) {
-                    System.out.println(" le temps est ecoulé "); // plus tard on en fera une fenetre
-                    finDePartie(); // pr donner resultat du jeu
-                    arreter(); // stoppe la boucle
-                    break;
-                }
 
                 long duree = System.currentTimeMillis() - debut;
-                if (duree < 16) { // pour ~60 FPS = 16ms par frame
+                if (duree < 16) {
                     try {
                         Thread.sleep(16 - duree);
                     } catch (InterruptedException e) {
                         System.err.print(e.getMessage());
-                        Thread.currentThread().interrupt();
                     }
                 }
             }
-            arreterExecuteur();
         });
     }
 
-    // calcul des gradients + deplace lesparticules
     private void update() {
         List<Callable<Void>> tachesCalcul = new ArrayList<>();
         for (Equipe equipe : equipes) {
@@ -67,161 +53,54 @@ public class MoteurJeu {
             });
         }
         try {
-            executeur.invokeAll(tachesCalcul);
-            deplacerParticules();
+            executeur.invokeAll(tachesCalcul); // attente du calcul de tous les gradient avt mouvement partivules
         } catch (InterruptedException e) {
             System.out.println(e.getMessage());
-            Thread.currentThread().interrupt();
         }
-        deplacerParticules();
-
-        if (finDePartie()) {
-            arreter();
-        }
+        // puis appel methode pour deplacer les particules
 
     }
 
     private void deplacerParticules() {
-        for (Equipe equipe : equipes) {
-            Cible cible = equipe.getCible();
-            float cibleX = (float) cible.getPosition().x();
-            float cibleY = (float) cible.getPosition().y();
+        int largeur = carte.getLargeur();
+        int hauteur = carte.getHauteur();
 
-            float centreX = 0, centreY = 0;
-            for (Particule p : equipe.getParticules()) {
-                centreX += p.getX();
-                centreY += p.getY();
-            }
-            int nbParticules = equipe.getParticules().size();
-            if (nbParticules > 0) {
-                centreX /= nbParticules;
-                centreY /= nbParticules;
-            }
+        for (Equipe equipe : equipes) {
+            int[][] gradient = equipe.getGradient();
+            if (gradient == null)
+                continue;
 
             for (Particule p : new ArrayList<>(equipe.getParticules())) {
-                int oldX = Math.round(p.getX());
-                int oldY = Math.round(p.getY());
+                Position curPos = p.getPosition();
+                int x = curPos.x();
+                int y = curPos.y();
 
-                // deplace vers la cible
-                float dx = cibleX - p.getX();
-                float dy = cibleY - p.getY();
-                float distance = (float) Math.sqrt(dx * dx + dy * dy);
+                int bestX = x;
+                int bestY = y;
+                int bestDist = gradient[y][x];
 
-                float vx = 0, vy = 0;
-                if (distance > 0) {
-                    float vitesse = 0.25f; // vitesse de base un peu plus rapide
-                    vx = vitesse * dx / distance;
-                    vy = vitesse * dy / distance;
-                }
+                int[][] directions = { { 0, -1 }, { 0, 1 }, { -1, 0 }, { 1, 0 } };
+                for (int[] dir : directions) {
+                    int nx = x + dir[0];
+                    int ny = y + dir[1];
 
-                // repulsiondes particules proches
-                float repelX = 0, repelY = 0;
-                float distSeuilRepulsion = 0.45f; // plus petit = particules très serrées
-                for (Particule autre : equipe.getParticules()) {
-                    if (autre == p)
-                        continue;
-                    float diffX = p.getX() - autre.getX();
-                    float diffY = p.getY() - autre.getY();
-                    float distPart = (float) Math.sqrt(diffX * diffX + diffY * diffY);
-                    if (distPart > 0 && distPart < distSeuilRepulsion) {
-                        repelX += diffX / distPart / distPart * 0.5f; // repulsion plus faible
-                        repelY += diffY / distPart / distPart * 0.5f;
+                    if (nx >= 0 && nx < largeur && ny >= 0 && ny < hauteur) {
+                        int valVoisin = gradient[ny][nx];
+                        if (valVoisin != -1 && valVoisin < bestDist) {
+                            bestDist = valVoisin;
+                            bestX = nx;
+                            bestY = ny;
+                        }
                     }
                 }
-
-                double angle = 2 * Math.PI * Math.random();
-                float randomX = 0.003f * (float) Math.cos(angle);
-                float randomY = 0.003f * (float) Math.sin(angle);
-
-                vx += repelX + randomX;
-                vy += repelY + randomY;
-
-                float vitesseMax = 0.35f;
-                float vitesseActuelle = (float) Math.sqrt(vx * vx + vy * vy);
-                if (vitesseActuelle > vitesseMax) {
-                    vx = vx / vitesseActuelle * vitesseMax;
-                    vy = vy / vitesseActuelle * vitesseMax;
-                }
-
-                p.setVitesse(vx, vy);
-                p.updatePosition();
-
-                // limites de la carte
-                float nx = Math.max(0, Math.min(carte.getLargeur() - 1, p.getX()));
-                float ny = Math.max(0, Math.min(carte.getHauteur() - 1, p.getY()));
-                p.setPosition(nx, ny);
-
-                Particule autre = carte.getCase(Math.round(nx), Math.round(ny)).getParticule();
-                // particule e1 attaque particule e2
-                if (autre != null && autre.getEquipe() != p.getEquipe()) {
-                    int degats = 10;
-                    autre.setEnergie(Math.max(0, autre.getEnergie() - degats));
-                    if (autre.getEnergie() == 0) {
-                        autre.setEquipe(p.getEquipe()); // conversion
-                        autre.setEnergie(100);
-                    }
-                }
-
-                carte.mettreAJourParticule(p, oldX, oldY);
-            }
-        }
-
-    }
-
-    private boolean finDePartie() {
-        int nbEquipesVivantes = 0;
-        Equipe gagnante = null;
-        for (Equipe e : equipes) {
-            if (!e.getParticules().isEmpty()) {
-                nbEquipesVivantes++;
-                gagnante = e;
-            }
-        }
-        if (nbEquipesVivantes <= 1) {
-            if (gagnante != null) {
-                System.out.println("GAGNANT " + gagnante.getNom());
-            } else {
-                System.out.println("EGALITE");
-            }
-            return true;
-        }
-        return false;
-    }
-
-    public void setCibleEquipe(int idEquipe, float x, float y) {
-        for (Equipe e : equipes) {
-            if (e.getId() == idEquipe) {
-                e.getCible().setPosition(x, y);
-                return;
-            }
-        }
-    }
-
-    private void arreterExecuteur() { // stop l executor et libere les ressources
-        executeur.shutdown();
-        try {
-            if (!executeur.awaitTermination(5, TimeUnit.SECONDS)) {
-                executeur.shutdownNow();
-                if (!executeur.awaitTermination(5, TimeUnit.SECONDS)) {
-                    System.err.println("executeur n'a pas pu etre arrete");
+                if (bestX != x || bestY != y) {
+                    // Methode pr faire le deplacement (todo)
                 }
             }
-        } catch (InterruptedException e) {
-            executeur.shutdownNow();
-            Thread.currentThread().interrupt();
         }
     }
 
-    public void arreter() {
-        enCours = false;
-    }
-
-    public Cible getCibleEquipe(int idEquipe) {
-        for (Equipe e : equipes) {
-            if (e.getId() == idEquipe) {
-                return e.getCible();
-            }
-        }
-        return null;
+    private void deplacement() {
+        // todo gerer les mouvements sur la carte, les collisions
     }
 }
