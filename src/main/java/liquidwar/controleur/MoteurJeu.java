@@ -8,6 +8,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import liquidwar.model.CarteJeu;
+import liquidwar.model.Case;
 import liquidwar.model.Cible;
 import liquidwar.model.Equipe;
 import liquidwar.model.Particule;
@@ -192,5 +193,36 @@ public class MoteurJeu {
         if(debutPartie==0) return DUREE_PARTIE;
         long ecoule=System.currentTimeMillis()-debutPartie;
         return Math.max(0, DUREE_PARTIE-ecoule);
+    }
+
+    private void traiterDeplacement(Particule p, int oldX, int oldY, int newX,int newY){
+        if(carte.estLibre(newX, newY)){
+            carte.retirerParticule(oldX, oldY);
+            carte.placerParticule(newX, newY, p);
+            p.setPosition(new Position(newX,newY));
+        } else {
+            Case caseCible=carte.getCase(newX, newY);
+            if(caseCible!=null&&caseCible.getType()==Case.TypeCase.PARTICULE){
+                Particule autre=caseCible.getParticule();
+                if(autre==null) return;
+
+                if(autre.getEquipe()!=p.getEquipe()){
+                    int degats=10;
+                    Equipe oldEquipe=autre.getEquipe();
+                    boolean converti=autre.subirAttaque(degats, p.getEquipe());
+                    if(converti){
+                        oldEquipe.retirerParticule(autre);
+                        p.getEquipe().ajouterParticule(autre);
+
+                    }
+                } else {
+                    int soin=1; //si c'est de la meme equipe, on soigne (transfert d'energie)
+                    if(p.getEnergie()>20){
+                        p.diminuerEnergie(soin);
+                        autre.recevoirSoin(soin);
+                    }
+                }
+            }
+        }
     }
 }

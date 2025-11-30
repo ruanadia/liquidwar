@@ -1,7 +1,7 @@
 package liquidwar.model;
 
 public class Particule {
-    private final Equipe equipe;
+    private Equipe equipe;
     private int energie;
     private final int energieMin;
     private final int energieMax;
@@ -78,5 +78,26 @@ public class Particule {
         this.x = pos.x();
         this.y = pos.y();
     }
+
+    public boolean subirAttaque(int degats, Equipe attaquant){
+        this.energie-=degats;
+        if (this.energie<=energieMin){
+            convertir(attaquant);
+            return true;
+        }
+        return false;
+    }
+
+    public void recevoirSoin(int soin){
+        this.energie+=soin;
+        if(this.energie>energieMax){
+            this.energie=energieMax;
+        }
+    }
+
+    public void convertir(Equipe nvlleEquipe){
+        this.equipe=nvlleEquipe;
+        this.energie=(energieMax+energieMin)/2; //restore de 50%de l'energie pour pas remourir instant
+    }  
 
 }
