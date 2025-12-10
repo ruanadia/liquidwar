@@ -22,7 +22,7 @@ public class MoteurJeu {
     private final ExecutorService executeur = Executors.newVirtualThreadPerTaskExecutor();
 
     private volatile long debutPartie;
-    private final long DUREE_PARTIE=180_000;
+    private final long DUREE_PARTIE = 180_000;
 
     public MoteurJeu(CarteJeu carte, List<Equipe> equipes) {
         this.carte = carte;
@@ -31,11 +31,11 @@ public class MoteurJeu {
     }
 
     public void demarrer() {
-        this.debutPartie=System.currentTimeMillis();
+        this.debutPartie = System.currentTimeMillis();
         Thread.ofVirtual().start(() -> {
             while (enCours) {
 
-                if(getTempsRestant()<=0){
+                if (getTempsRestant() <= 0) {
                     arreter();
                     System.out.println("fin de la partie");
                     break;
@@ -190,34 +190,36 @@ public class MoteurJeu {
     }
 
     public long getTempsRestant() {
-        if(debutPartie==0) return DUREE_PARTIE;
-        long ecoule=System.currentTimeMillis()-debutPartie;
-        return Math.max(0, DUREE_PARTIE-ecoule);
+        if (debutPartie == 0)
+            return DUREE_PARTIE;
+        long ecoule = System.currentTimeMillis() - debutPartie;
+        return Math.max(0, DUREE_PARTIE - ecoule);
     }
 
-    private void traiterDeplacement(Particule p, int oldX, int oldY, int newX,int newY){
-        if(carte.estLibre(newX, newY)){
+    private void traiterDeplacement(Particule p, int oldX, int oldY, int newX, int newY) {
+        if (carte.estLibre(newX, newY)) {
             carte.retirerParticule(oldX, oldY);
             carte.placerParticule(newX, newY, p);
-            p.setPosition(new Position(newX,newY));
+            p.setPosition(new Position(newX, newY));
         } else {
-            Case caseCible=carte.getCase(newX, newY);
-            if(caseCible!=null&&caseCible.getType()==Case.TypeCase.PARTICULE){
-                Particule autre=caseCible.getParticule();
-                if(autre==null) return;
+            Case caseCible = carte.getCase(newX, newY);
+            if (caseCible != null && caseCible.getType() == Case.TypeCase.PARTICULE) {
+                Particule autre = caseCible.getParticule();
+                if (autre == null)
+                    return;
 
-                if(autre.getEquipe()!=p.getEquipe()){
-                    int degats=10;
-                    Equipe oldEquipe=autre.getEquipe();
-                    boolean converti=autre.subirAttaque(degats, p.getEquipe());
-                    if(converti){
+                if (autre.getEquipe() != p.getEquipe()) {
+                    int degats = 10;
+                    Equipe oldEquipe = autre.getEquipe();
+                    boolean converti = autre.subirAttaque(degats, p.getEquipe());
+                    if (converti) {
                         oldEquipe.retirerParticule(autre);
                         p.getEquipe().ajouterParticule(autre);
 
                     }
                 } else {
-                    int soin=1; //si c'est de la meme equipe, on soigne (transfert d'energie)
-                    if(p.getEnergie()>20){
+                    int soin = 1; // si c'est de la meme equipe, on soigne (transfert d'energie)
+                    if (p.getEnergie() > 20) {
                         p.diminuerEnergie(soin);
                         autre.recevoirSoin(soin);
                     }

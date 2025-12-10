@@ -1,24 +1,22 @@
 package liquidwar.vue;
 
+import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+
 import javax.swing.JPanel;
 
 import liquidwar.controleur.MoteurJeu;
 import liquidwar.model.CarteJeu;
 import liquidwar.model.Cible;
 import liquidwar.model.Particule;
-
-// pr la cible 
-import java.awt.AlphaComposite;
-import java.awt.Graphics2D;
-import java.awt.Color;
 
 public class CarteVue extends JPanel {
     private final CarteJeu carte;
@@ -62,6 +60,18 @@ public class CarteVue extends JPanel {
         g.fillRect(0, 0, getWidth(), getHeight());
 
         int pixelSize = 2; // taille particule en pixels
+
+        // on dessin les obstacles avant les particules pour qu'elles soient par dessus
+        for (int y = 0; y < carte.getHauteur(); y++) {
+            for (int x = 0; x < carte.getLargeur(); x++) {
+                if (carte.estObstacle(x, y)) {
+                    g.setColor(Color.GRAY);
+                    g.fillRoundRect(x * tailleCase, y * tailleCase,
+                    tailleCase, tailleCase,
+                    tailleCase, tailleCase);
+                    }
+            }
+        }
 
         // dessiner les particules
         for (int y = 0; y < carte.getHauteur(); y++) {

@@ -60,3 +60,9 @@ task jsondemo(type: JavaExec) {
 application {
     mainClass = 'fr.uparis.informatique.cpoo5.jfxdemo.HelloJavaFX'
 }
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}

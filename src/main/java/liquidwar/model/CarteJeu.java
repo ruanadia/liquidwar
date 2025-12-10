@@ -117,4 +117,60 @@ public class CarteJeu {
         }
     }
 
+    public void genererObstacles(int nombre) {
+        int count = 0;
+        while (count < nombre) {
+            int x = (int) (Math.random() * largeur);
+            int y = (int) (Math.random() * hauteur);
+            if (placerObstacle(x, y)) {
+                count++;
+            }
+        }
+    }
+    
+    public boolean estObstacle(int x, int y) {
+        Case c = getCase(x, y);
+        return c != null && c.getType() == Case.TypeCase.OBSTACLE;
+    }
+    public void stylecarte() {
+        int cx = largeur / 2; // pourle rond central
+        int cy = hauteur / 2;
+        int r = 35; // taille du rond central
+        for (int y = cy - r; y <= cy + r; y++) {
+            for (int x = cx - r; x <= cx + r; x++) {
+                int dx = x - cx;
+                int dy = y - cy;
+                if (dx*dx + dy*dy <= r*r) {
+                    placerObstacle(x, y);
+                }
+            }
+        }
+        placerRond(20, 20, 18); // coin hautgauche
+        placerRond(largeur - 25, 20, 18); //haut-droit
+        placerRond(largeur / 2, hauteur - 20, 22); // bas centre
+    
+        genererVagueVerticale(largeur / 4, 8); // vague gauche
+        genererVagueVerticale(3 * largeur / 4, 8); 
+    }
+    private void placerRond(int cx, int cy, int r) {
+        for (int y = cy - r; y <= cy + r; y++) {
+            for (int x = cx - r; x <= cx + r; x++) {
+                int dx = x - cx;
+                int dy = y - cy;
+                if (dx*dx + dy*dy <= r*r) {
+                    placerObstacle(x, y);
+                }
+            }
+        }
+    }
+    
+    private void genererVagueVerticale(int col, int amplitude) {
+        for (int y = 10; y < hauteur - 10; y++) {
+            int offset = (int)(Math.sin(y * 0.1) * amplitude);
+            placerObstacle(col + offset, y);
+        }
+    }
+    
+    
+
 }

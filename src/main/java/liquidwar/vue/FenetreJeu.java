@@ -1,6 +1,7 @@
 package liquidwar.vue;
 
 import java.util.List;
+
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
@@ -37,7 +38,7 @@ public class FenetreJeu extends JFrame {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             CarteJeu carte = new CarteJeu(200, 150);
-
+            carte.stylecarte();
             // creer cible
             Cible cible = new Cible(50, 50);
 
