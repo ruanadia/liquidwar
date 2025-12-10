@@ -142,12 +142,23 @@ public class MoteurJeu {
                 p.setVitesse(vx, vy);
                 p.updatePosition();
 
-                // limites de la carte
+                // limites carte
                 float nx = Math.max(0, Math.min(carte.getLargeur() - 1, p.getX()));
                 float ny = Math.max(0, Math.min(carte.getHauteur() - 1, p.getY()));
-                p.setPosition(nx, ny);
-
+                
+                int testX = Math.round(nx);
+                int testY = Math.round(ny);
+    
+                if (carte.estObstacle(testX, testY)) { // obstacle detecte
+                    // la particule ne bouge pas
+                    p.setPosition(oldX, oldY);
+                    continue;
+                }
+            
+                p.setPosition(nx, ny);// pas obstacle donc on met a jour la position
+                
                 carte.mettreAJourParticule(p, oldX, oldY);
+                
             }
         }
     }
