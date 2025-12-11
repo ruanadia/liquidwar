@@ -81,7 +81,7 @@ public class Particule {
 
     public boolean subirAttaque(int degats, Equipe attaquant){
         this.energie-=degats;
-        if (this.energie<=energieMin){
+        if (this.energie<=0){
             convertir(attaquant);
             return true;
         }
@@ -97,7 +97,7 @@ public class Particule {
 
     public void convertir(Equipe nvlleEquipe){
         this.equipe=nvlleEquipe;
-        this.energie=(energieMax+energieMin)/2; //restore de 50%de l'energie pour pas remourir instant
+        this.energie=(energieMax+energieMin)/2; //on remet l energie a la moitie 
     }  
 
 }

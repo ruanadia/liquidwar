@@ -8,6 +8,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import liquidwar.model.CarteJeu;
+import liquidwar.model.Case;
 import liquidwar.model.Cible;
 import liquidwar.model.Equipe;
 import liquidwar.model.Particule;
@@ -76,41 +77,60 @@ public class MoteurJeu {
         }
     }
 
-    private void deplacerParticules() {
-        for (Equipe equipe : equipes) {
-            Cible cible = equipe.getCible();
-            float cibleX = (float) cible.getPosition().x();
-            float cibleY = (float) cible.getPosition().y();
+private void deplacerParticules() {
+    for (Equipe equipe : equipes) {
+        Cible cible = equipe.getCible();
+        float cibleX = (float) cible.getPosition().x();
+        float cibleY = (float) cible.getPosition().y();
 
-            float centreX = 0, centreY = 0;
-            for (Particule p : equipe.getParticules()) {
-                centreX += p.getX();
-                centreY += p.getY();
+        float centreX = 0, centreY = 0;
+        for (Particule p : equipe.getParticules()) {
+            centreX += p.getX();
+            centreY += p.getY();
+        }
+        int nbParticules = equipe.getParticules().size();
+        if (nbParticules > 0) {
+            centreX /= nbParticules;
+            centreY /= nbParticules;
+        }
+
+        for (Particule p : new ArrayList<>(equipe.getParticules())) {
+
+            int oldX = Math.round(p.getX());
+            int oldY = Math.round(p.getY());
+
+            int[][] grad = equipe.getGradient();
+            if (grad == null) continue;
+
+            Position next = choisirDirectionLW(p, grad);
+            if (next == null) continue;
+
+            Particule ennemi = null;
+            Case caseNext = carte.getCase(next.x(), next.y());
+            if (caseNext != null) {
+                ennemi = caseNext.getParticule();
             }
-            int nbParticules = equipe.getParticules().size();
-            if (nbParticules > 0) {
-                centreX /= nbParticules;
-                centreY /= nbParticules;
+
+            if (ennemi != null && ennemi.getEquipe() != p.getEquipe()) {
+
+                boolean convertie = ennemi.subirAttaque(1, p.getEquipe());
+
+                if (convertie) {
+                    retirerParticuleDeSonEquipe(ennemi);
+                    ajouterParticuleDansEquipe(ennemi, p.getEquipe());
+                }
+
+                continue;
             }
 
-            for (Particule p : new ArrayList<>(equipe.getParticules())) {
-
-                int oldX = Math.round(p.getX());
-                int oldY = Math.round(p.getY());
-            
-                int[][] grad = equipe.getGradient();
-                if (grad == null) continue;
-            
-                Position next = choisirDirectionLW(p, grad);
-            
-                if (next == null) continue; // ne bouge pas
-            
+            if (carte.estLibre(next.x(), next.y())) {
                 p.setPosition(next.x(), next.y());
                 carte.mettreAJourParticule(p, oldX, oldY);
             }
-            
         }
     }
+}
+
 
     public void setCibleEquipe(int idEquipe, float x, float y) {
         for (Equipe e : equipes) {
@@ -206,13 +226,13 @@ private int[] choisirDirectionGradient(Particule p, int[][] grad) {
 
     return new int[]{0,0}; 
 }
-private Position choisirDirectionLW(Particule p, int[][] grad) {
+public Position choisirDirectionLW(Particule p, int[][] grad) {
+
     int x = Math.round(p.getX());
     int y = Math.round(p.getY());
-
     int g0 = grad[y][x];
 
-    Position[] voisins = new Position[] {
+    Position[] voisins = {
         new Position(x+1, y),
         new Position(x-1, y),
         new Position(x, y+1),
@@ -223,37 +243,76 @@ private Position choisirDirectionLW(Particule p, int[][] grad) {
     Position bonne = null;
     Position acceptable = null;
 
-    int minGradient = Integer.MAX_VALUE;
+    int minG = Integer.MAX_VALUE;
 
     for (Position v : voisins) {
-        int nx = v.x();
-        int ny = v.y();
+        int nx = v.x(), ny = v.y();
 
-        if (nx < 0 || nx >= carte.getLargeur() || ny < 0 || ny >= carte.getHauteur())
-            continue;
+        if (!carte.estDansCarte(v)) continue;
 
         if (carte.estObstacle(nx, ny)) continue;
 
         int gv = grad[ny][nx];
 
-        if (gv < minGradient) {
-            minGradient = gv;
-            principale = v;
-        }
+        if (gv < minG) { minG = gv; principale = v; }
+        if (gv < g0) bonne = v;
+        else if (gv == g0) acceptable = v;
+    }
 
-        if (gv < g0) {
-            bonne = v;
-        } else if (gv == g0) {
-            acceptable = v;
+    if (principale != null) {
+        int nx = principale.x(), ny = principale.y();
+
+        if (carte.estLibre(nx, ny)) return principale;
+
+        if (estEnnemi(nx, ny, p)) {
+            attaquer(p, carte.getCase(nx, ny).getParticule());
+            return null;
         }
     }
 
-    if (principale != null && carte.estLibre(principale.x(), principale.y())) return principale;
-    if (bonne != null && carte.estLibre(bonne.x(), bonne.y())) return bonne;
-    if (acceptable != null && carte.estLibre(acceptable.x(), acceptable.y())) return acceptable;
+    if (bonne != null) {
+        int nx = bonne.x(), ny = bonne.y();
+
+        if (carte.estLibre(nx, ny)) return bonne;
+
+        if (estEnnemi(nx, ny, p)) {
+            attaquer(p, carte.getCase(nx, ny).getParticule());
+            return null;
+        }
+    }
+
+    if (acceptable != null) {
+        int nx = acceptable.x(), ny = acceptable.y();
+
+        if (carte.estLibre(nx, ny)) return acceptable;
+    }
 
     return null;
 }
+
+
+    private boolean estEnnemi(int x, int y, Particule p) {
+        Particule autre = carte.getCase(x, y).getParticule();
+        return autre != null && autre.getEquipe() != p.getEquipe();
+    }
+
+    private void attaquer(Particule attaquant, Particule cible) {
+        boolean convertie = cible.subirAttaque(1, attaquant.getEquipe());
+
+        if (convertie) {
+            System.out.println("une conversion a eu lieu !");
+        }
+    }
+    private void retirerParticuleDeSonEquipe(Particule p) {
+        for (Equipe e : equipes) {
+            e.getParticules().remove(p);
+        }
+    }
+    
+    private void ajouterParticuleDansEquipe(Particule p, Equipe nouvelleEquipe) {
+        nouvelleEquipe.getParticules().add(p);
+    }
+
 
 
 }
