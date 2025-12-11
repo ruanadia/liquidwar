@@ -23,6 +23,7 @@ public class CarteVue extends JPanel {
     private final int tailleCase;
     private final MoteurJeu moteur;
     private final int idEquipe;
+    private boolean up = false, down = false, left = false, right = false;
 
     public CarteVue(CarteJeu carte, int tailleCase, MoteurJeu moteur, int idEquipe) {
         this.carte = carte;
@@ -51,10 +52,39 @@ public class CarteVue extends JPanel {
                 moteur.setCibleEquipe(idEquipe, x, y);
             }
         });
+            // controle pour l'equipe 2 
+            setFocusable(true);
+            requestFocusInWindow();
+            
+            addKeyListener(new java.awt.event.KeyAdapter() {
+                @Override
+                public void keyPressed(java.awt.event.KeyEvent e) {
+                    switch (e.getKeyCode()) {
+                        case java.awt.event.KeyEvent.VK_UP -> up = true;
+                        case java.awt.event.KeyEvent.VK_DOWN -> down = true;
+                        case java.awt.event.KeyEvent.VK_LEFT -> left = true;
+                        case java.awt.event.KeyEvent.VK_RIGHT -> right = true;
+                    }
+                }
+            
+                @Override
+                public void keyReleased(java.awt.event.KeyEvent e) {
+                    switch (e.getKeyCode()) {
+                        case java.awt.event.KeyEvent.VK_UP -> up = false;
+                        case java.awt.event.KeyEvent.VK_DOWN -> down = false;
+                        case java.awt.event.KeyEvent.VK_LEFT -> left = false;
+                        case java.awt.event.KeyEvent.VK_RIGHT -> right = false;
+                    }
+                }
+            });
+            
+
+
     }
 
     @Override
     protected void paintComponent(Graphics g) {
+        mettreAJourCibleBleue();
         super.paintComponent(g);
         g.setColor(Color.BLACK);
         g.fillRect(0, 0, getWidth(), getHeight());
@@ -109,7 +139,6 @@ public class CarteVue extends JPanel {
             g2.setColor(Color.PINK);
             g2.fillOval(cx - rayonExterieur, cy - rayonExterieur, 2 * rayonExterieur, 2 * rayonExterieur);
 
-            // trou au centre
             g2.setColor(Color.BLACK);
             g2.fillOval(cx - rayonInterieur, cy - rayonInterieur, 2 * rayonInterieur, 2 * rayonInterieur);
         }
@@ -135,4 +164,30 @@ public class CarteVue extends JPanel {
         g.drawString(txt, x, y);
 
     }
+    private void mettreAJourCibleBleue() {
+        Cible cible = moteur.getCibleEquipe(2); 
+    
+        if (cible == null) return;
+    
+        float x = cible.getPosition().x();
+        float y = cible.getPosition().y();
+    
+        float speed = 0.6f; 
+    
+        if (up) y -= speed;
+        if (down) y += speed;
+        if (left) x -= speed;
+        if (right) x += speed;
+    
+        float maxX = (getWidth() / tailleCase) - 1;
+        float maxY = (getHeight() / tailleCase) - 1;
+        
+        x = Math.max(0f, Math.min(maxX, x));
+        y = Math.max(0f, Math.min(maxY, y));
+        
+        
+    
+        moteur.setCibleEquipe(2, x, y);
+    }
+    
 }

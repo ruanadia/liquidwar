@@ -13,13 +13,17 @@ import liquidwar.model.Equipe;
 import liquidwar.model.Particule;
 
 public class FenetreJeu extends JFrame {
+
     private final CarteVue carteVue;
     private final MoteurJeu moteur;
 
-    public FenetreJeu(CarteJeu carte, List<Equipe> equipes, MoteurJeu moteur, Cible cible) {
+    public FenetreJeu(CarteJeu carte, List<Equipe> equipes, MoteurJeu moteur) {
         super("Liquid War");
+
         this.moteur = moteur;
-        this.carteVue = new CarteVue(carte, 10, moteur, 1); // équipe 1 suit la souris
+
+        // On affiche l'équipe 1 (rouge) dans la vue
+        this.carteVue = new CarteVue(carte, 10, moteur, 1);
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         getContentPane().add(carteVue);
@@ -37,37 +41,56 @@ public class FenetreJeu extends JFrame {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
+
             CarteJeu carte = new CarteJeu(200, 150);
             carte.stylecarte();
-            // creer cible
-            Cible cible = new Cible(50, 50);
 
-            Equipe equipe1 = new Equipe(1, "Rouge", 0xFF0000, cible);
+            Cible cibleRouge = new Cible(50, 50);
+            Cible cibleBleu  = new Cible(100, 30); 
 
-            // nuage initial de particules
-            float centreX = 50;
-            float centreY = 50;
-            float rayonX = 20;
-            float rayonY = 20;
-            int nbParticules = 1500;
+            Equipe rouge = new Equipe(1, "rouge", 0xFF0000, cibleRouge);
+            Equipe bleu  = new Equipe(2, "bleu", 0x0000FF, cibleBleu);
 
-            for (int i = 0; i < nbParticules; i++) {
-                double angle = 2 * Math.PI * Math.random();
-                float rX = (float) (rayonX * Math.random());
-                float rY = (float) (rayonY * Math.random());
-                float x = centreX + rX * (float) Math.cos(angle);
-                float y = centreY + rY * (float) Math.sin(angle);
+            genererNuage(carte, rouge, 50, 50);
+            genererNuage(carte, bleu, carte.getLargeur() - 20, carte.getHauteur() / 2);
 
-                Particule p = new Particule(equipe1, x, y, 100, 0, 100);
-                equipe1.ajouterParticule(p);
-                carte.placerParticule(Math.round(x), Math.round(y), p);
-            }
+            System.out.println("rouge : " + rouge.getParticules().size()); // pour verif 
+            System.out.println("bleu : " + bleu.getParticules().size());
 
-            List<Equipe> equipes = List.of(equipe1);
+            List<Equipe> equipes = List.of(rouge, bleu);
 
             MoteurJeu moteur = new MoteurJeu(carte, equipes);
-            FenetreJeu fenetre = new FenetreJeu(carte, equipes, moteur, cible);
+
+            FenetreJeu fenetre = new FenetreJeu(carte, equipes, moteur);
             fenetre.lancer();
         });
+    }
+
+
+    private static void genererNuage(CarteJeu carte, Equipe equipe, float centreX, float centreY) {
+
+        float rayonX = 20;
+        float rayonY = 20;
+        int nbParticules = 1000; 
+
+        for (int i = 0; i < nbParticules; i++) {
+
+            double angle = 2 * Math.PI * Math.random();
+            float rX = (float)(rayonX * Math.random());
+            float rY = (float)(rayonY * Math.random());
+
+            float x = centreX + rX * (float)Math.cos(angle);
+            float y = centreY + rY * (float)Math.sin(angle);
+
+            int ix = Math.round(x);
+            int iy = Math.round(y);
+
+            if (!carte.estLibre(ix, iy)) continue; // évite obstacles + collisions spawn
+
+            Particule p = new Particule(equipe, x, y, 100, 0, 100);
+
+            equipe.ajouterParticule(p);
+            carte.placerParticule(ix, iy, p);
+        }
     }
 }

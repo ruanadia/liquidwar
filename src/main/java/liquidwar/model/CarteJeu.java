@@ -135,7 +135,7 @@ public class CarteJeu {
     public void stylecarte() {
         int cx = largeur / 2; // pourle rond central
         int cy = hauteur / 2;
-        int r = 35; // taille du rond central
+        int r = 20; // taille du rond central
         for (int y = cy - r; y <= cy + r; y++) {
             for (int x = cx - r; x <= cx + r; x++) {
                 int dx = x - cx;
