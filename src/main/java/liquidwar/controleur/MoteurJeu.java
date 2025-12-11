@@ -8,11 +8,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import liquidwar.model.CarteJeu;
-import liquidwar.model.Case;
 import liquidwar.model.Cible;
 import liquidwar.model.Equipe;
 import liquidwar.model.Particule;
-import liquidwar.model.Position;
 
 public class MoteurJeu {
     private final CarteJeu carte;
@@ -102,10 +100,10 @@ public class MoteurJeu {
                 
             int[][] gradientEquipe = equipe.getGradient();
             if (gradientEquipe != null) {
-            int[] dir = deplaceGradient(p, gradientEquipe);
+            int[] dir = choisirDirectionGradient(p, gradientEquipe);
 
-            float gx = dir[0]; // direction gradient
-            float gy = dir[1];
+            float gx = dir[0]*0.25f ; // direction gradient
+            float gy = dir[1] *0.25f;
 
             float dx = cibleX - p.getX();// direction vers la cible
             float dy = cibleY - p.getY();
@@ -118,8 +116,7 @@ public class MoteurJeu {
             vx = gx * 0.25f + dx * 0.15f; // combine des deux influences gradiant et cible
             vy = gy * 0.25f + dy * 0.15f;
 
-}
-
+    }
 
                 // repulsiondes particules proches
                 float repelX = 0, repelY = 0;
@@ -160,9 +157,8 @@ public class MoteurJeu {
                 int testX = Math.round(nx);
                 int testY = Math.round(ny);
     
-                if (carte.estObstacle(testX, testY)) { // obstacle detecte
-                    // la particule ne bouge pas
-                    p.setPosition(oldX, oldY);
+                if (carte.estObstacle(testX, testY)) { // obstacle detecte       
+                    p.setPosition(oldX, oldY); // la particule ne bouge pas
                     continue;
                 }
             
@@ -218,70 +214,55 @@ public class MoteurJeu {
         return Math.max(0, DUREE_PARTIE - ecoule);
     }
 
-    private void traiterDeplacement(Particule p, int oldX, int oldY, int newX, int newY) {
-        if (carte.estLibre(newX, newY)) {
-            carte.retirerParticule(oldX, oldY);
-            carte.placerParticule(newX, newY, p);
-            p.setPosition(new Position(newX, newY));
-        } else {
-            Case caseCible = carte.getCase(newX, newY);
-            if (caseCible != null && caseCible.getType() == Case.TypeCase.PARTICULE) {
-                Particule autre = caseCible.getParticule();
-                if (autre == null)
-                    return;
+  
+private int[] choisirDirectionGradient(Particule p, int[][] grad) {
+    int x = Math.round(p.getX());
+    int y = Math.round(p.getY());
 
-                if (autre.getEquipe() != p.getEquipe()) {
-                    int degats = 10;
-                    Equipe oldEquipe = autre.getEquipe();
-                    boolean converti = autre.subirAttaque(degats, p.getEquipe());
-                    if (converti) {
-                        oldEquipe.retirerParticule(autre);
-                        p.getEquipe().ajouterParticule(autre);
+    int gActuel = grad[y][x];
+    if (gActuel < 0) return new int[]{0,0};
 
-                    }
-                } else {
-                    int soin = 1; // si c'est de la meme equipe, on soigne (transfert d'energie)
-                    if (p.getEnergie() > 20) {
-                        p.diminuerEnergie(soin);
-                        autre.recevoirSoin(soin);
-                    }
-                }
+    int[][] dirs = {
+        {0,-1}, {0,1}, {-1,0}, {1,0},
+        {-1,-1}, {-1,1}, {1,-1}, {1,1}
+    };
+
+    int[] dirPrincipale = null;
+    int[] dirBonne = null;
+    int[] dirAcceptable = null;
+
+    for (int[] d : dirs) {
+        int nx = x + d[0];
+        int ny = y + d[1];
+
+        if (nx < 0 || nx >= carte.getLargeur() || ny < 0 || ny >= carte.getHauteur())
+            continue;
+
+        if (carte.estObstacle(nx, ny))
+            continue;
+
+        int gVoisin = grad[ny][nx];
+        if (gVoisin < 0) continue;
+
+        if (gVoisin < gActuel) {
+            // direction principale c le gradient minimal
+            if (dirPrincipale == null || gVoisin < grad[y + dirPrincipale[1]][x + dirPrincipale[0]]) {
+                dirBonne = dirPrincipale;
+                dirPrincipale = d;
             }
+        } 
+        else if (gVoisin == gActuel) {
+            dirAcceptable = d;
         }
+        
     }
 
-    private int[] deplaceGradient(Particule p, int[][] gradient) {
-        int x = Math.round(p.getX());
-        int y = Math.round(p.getY());
     
-        int meilleurScore = gradient[y][x]; // score actuel
-        int[] meilleureDir = {0, 0};
-    
-        int[][] directions = {
-            {0, -1}, // haut
-            {0, 1},  // bas
-            {-1, 0}, // gauche
-            {1, 0}   // droite
-        };
-    
-        for (int[] d : directions) {
-            int nx = x + d[0];
-            int ny = y + d[1];
-    
-            if (nx < 0 || ny < 0 || nx >= carte.getLargeur() || ny >= carte.getHauteur())
-                continue;
-    
-            if (carte.estObstacle(nx, ny))
-                continue;
-    
-            int score = gradient[ny][nx];
-            if (score <= meilleurScore) {
-                meilleurScore = score;
-                meilleureDir = d;
-            }
-        }
-    
-        return meilleureDir;
-    }
-    
+    if (dirPrincipale != null) return dirPrincipale;
+    if (dirBonne != null) return dirBonne;
+    if (dirAcceptable != null) return dirAcceptable;
+
+    return new int[]{0,0}; 
+}
+
 }
