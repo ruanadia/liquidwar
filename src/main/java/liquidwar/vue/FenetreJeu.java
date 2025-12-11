@@ -22,7 +22,6 @@ public class FenetreJeu extends JFrame {
 
         this.moteur = moteur;
 
-        // On affiche l'équipe 1 (rouge) dans la vue
         this.carteVue = new CarteVue(carte, 10, moteur, 1);
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -66,10 +65,7 @@ public class FenetreJeu extends JFrame {
     }
 
 
-    private static void genererNuage(CarteJeu carte, Equipe equipe,
-                                 float centreX, float centreY,
-                                 float rayonX, float rayonY,
-                                 int nbParticules) {
+    private static void genererNuage(CarteJeu carte, Equipe equipe, float centreX, float centreY,float rayonX, float rayonY,int nbParticules) {
 
     for (int i = 0; i < nbParticules; i++) {
         double angle = 2 * Math.PI * Math.random();
