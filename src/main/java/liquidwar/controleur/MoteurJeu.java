@@ -97,18 +97,29 @@ public class MoteurJeu {
             for (Particule p : new ArrayList<>(equipe.getParticules())) {
                 int oldX = Math.round(p.getX());
                 int oldY = Math.round(p.getY());
+  
+             float vx = 0, vy = 0;
+                
+            int[][] gradientEquipe = equipe.getGradient();
+            if (gradientEquipe != null) {
+            int[] dir = deplaceGradient(p, gradientEquipe);
 
-                // deplace vers la cible
-                float dx = cibleX - p.getX();
-                float dy = cibleY - p.getY();
-                float distance = (float) Math.sqrt(dx * dx + dy * dy);
+            float gx = dir[0]; // direction gradient
+            float gy = dir[1];
 
-                float vx = 0, vy = 0;
-                if (distance > 0) {
-                    float vitesse = 0.25f; // vitesse de base un peu plus rapide
-                    vx = vitesse * dx / distance;
-                    vy = vitesse * dy / distance;
-                }
+            float dx = cibleX - p.getX();// direction vers la cible
+            float dy = cibleY - p.getY();
+            float norm = (float)Math.sqrt(dx*dx + dy*dy);
+            if (norm > 0) {
+                dx /= norm;
+                dy /= norm;
+            }
+
+            vx = gx * 0.25f + dx * 0.15f; // combine des deux influences gradiant et cible
+            vy = gy * 0.25f + dy * 0.15f;
+
+}
+
 
                 // repulsiondes particules proches
                 float repelX = 0, repelY = 0;
@@ -238,4 +249,39 @@ public class MoteurJeu {
             }
         }
     }
+
+    private int[] deplaceGradient(Particule p, int[][] gradient) {
+        int x = Math.round(p.getX());
+        int y = Math.round(p.getY());
+    
+        int meilleurScore = gradient[y][x]; // score actuel
+        int[] meilleureDir = {0, 0};
+    
+        int[][] directions = {
+            {0, -1}, // haut
+            {0, 1},  // bas
+            {-1, 0}, // gauche
+            {1, 0}   // droite
+        };
+    
+        for (int[] d : directions) {
+            int nx = x + d[0];
+            int ny = y + d[1];
+    
+            if (nx < 0 || ny < 0 || nx >= carte.getLargeur() || ny >= carte.getHauteur())
+                continue;
+    
+            if (carte.estObstacle(nx, ny))
+                continue;
+    
+            int score = gradient[ny][nx];
+            if (score <= meilleurScore) {
+                meilleurScore = score;
+                meilleureDir = d;
+            }
+        }
+    
+        return meilleureDir;
+    }
+    
 }

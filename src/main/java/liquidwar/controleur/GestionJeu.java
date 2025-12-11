@@ -4,88 +4,76 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 import liquidwar.model.CarteJeu;
-import liquidwar.model.Cible;
 import liquidwar.model.Equipe;
 import liquidwar.model.Position;
 
 public class GestionJeu { // on peut peut être renommée cette classe en CalculateurGradient
     private final CarteJeu carte;
 
-    // c'est mieux de separer les equipes du calcul de gradient, pour gerer les
-    // calculs du gradient des deux equipes simultanés (multithreading)
 
-    // private final Equipe[] equipes;
-    // private int[][] gradient; // tab de distances pour le gradient
 
     public GestionJeu(CarteJeu carte) {
         this.carte = carte;
-
-        // this.equipes = equipes;
-        // this.gradient = new int[carte.getHauteur()][carte.getLargeur()];
     }
 
-    private void initialiserGradient() {
-        // déplacer ce qui avait ici dans calcul gradient pour avoir la variable local
-        // de distances
-    }
+   
 
     public int[][] calculGradient(Equipe equipe) {
         int largeur = carte.getLargeur();
         int hauteur = carte.getHauteur();
-        int[][] distances = new int[hauteur][largeur]; // variable local pour securite thread
-
-        for (int y = 0; y < carte.getHauteur(); y++) {
-            for (int x = 0; x < carte.getLargeur(); x++) {
-                distances[y][x] = -1;
+        int[][] dist = new int[hauteur][largeur];
+    
+        for (int y = 0; y < hauteur; y++) {
+            for (int x = 0; x < largeur; x++) {
+                dist[y][x] = -1; // non visite
             }
         }
+    
+        // commencer depuis la cible
+        Position posCible = equipe.getCible().getPosition();
+        int cx = posCible.x();
+        int cy = posCible.y();
+    
+        if (cx < 0 || cx >= largeur || cy < 0 || cy >= hauteur) // hors carte
+            return dist;
+    
+        dist[cy][cx] = 0;
+    
+        Queue<Position> file = new LinkedList<>();
+        file.add(new Position(cx, cy));
+    
+        int[][] dirs = {
+            {0, -1}, {0, 1}, {-1, 0}, {1, 0},   // orthogonales
+            {-1, -1}, {-1, 1}, {1, -1}, {1, 1} // diagonales
+        };
+        
+    
+        while (!file.isEmpty()) {
+            Position p = file.poll();
+            int x = p.x();
+            int y = p.y();
+            int d = dist[y][x];
+    
+            for (int[] dir : dirs) {
+                int nx = x + dir[0];
+                int ny = y + dir[1];
+    
+                // hors carte
+                if (nx < 0 || nx >= largeur || ny < 0 || ny >= hauteur)
+                    continue;
 
-        Cible cible = equipe.getCible();
-        Position depart = cible.getPosition();
-        if (depart.x() < 0 || depart.x() >= largeur || depart.y() < 0 || depart.y() >= hauteur) {
-            return distances;
-        }
-        distances[depart.y()][depart.x()] = 0;
-
-        Queue<Position> queue = new LinkedList<>();
-        queue.add(depart);
-
-        while (!queue.isEmpty()) {
-            Position pos = queue.poll();
-            int x = pos.x();
-            int y = pos.y();
-            int dist = distances[pos.y()][pos.x()];
-
-            for (int dy = -1; dy <= 1; dy++) {
-                for (int dx = -1; dx <= 1; dx++) {
-                    if (dx == 0 && dy == 0)
-                        continue;
-
-                    // coordonnées voisins
-                    int nx = x + dx;
-                    int ny = y + dy;
-                    if (nx >= 0 && nx < largeur && ny >= 0 && ny < hauteur) {
-                        if (carte.estLibre(nx, ny) && distances[ny][nx] == -1) {
-                            distances[ny][nx] = dist + 1;
-                            queue.add(new Position(nx, ny));
-                        }
-                    }
+                if (carte.estObstacle(nx, ny)) // obstacle alors traverse pas 
+                    continue;
+    
+                if (dist[ny][nx] == -1) { // pas visite encore 
+                    dist[ny][nx] = d + 1;
+                    file.add(new Position(nx, ny));
                 }
             }
         }
-        return distances;
+    
+        return dist;
     }
-
-    /*
-     * public int[][] getGradient() {
-     * return gradient;
-     * }
-     * 
-     * public void miseAJour() {
-     * for (Equipe e : equipes) {
-     * calculGradient(e);
-     * }
-     * }
-     */
-
+    
+    
 }
