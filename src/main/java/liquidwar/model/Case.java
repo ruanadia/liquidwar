@@ -34,4 +34,12 @@ public class Case {
         this.particule = p;
         this.type = (p == null) ? TypeCase.VIDE : TypeCase.PARTICULE;
     }
+    public boolean estObstacle() {
+        return this.type == TypeCase.OBSTACLE;
+    }
+    public boolean contientParticule() {
+        return this.type == TypeCase.PARTICULE && this.particule != null;
+    }
+    
+    
 }

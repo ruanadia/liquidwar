@@ -11,6 +11,7 @@ import liquidwar.model.CarteJeu;
 import liquidwar.model.Cible;
 import liquidwar.model.Equipe;
 import liquidwar.model.Particule;
+import liquidwar.model.Position;
 
 public class MoteurJeu {
     private final CarteJeu carte;
@@ -93,80 +94,21 @@ public class MoteurJeu {
             }
 
             for (Particule p : new ArrayList<>(equipe.getParticules())) {
+
                 int oldX = Math.round(p.getX());
                 int oldY = Math.round(p.getY());
-  
-             float vx = 0, vy = 0;
-                
-            int[][] gradientEquipe = equipe.getGradient();
-            if (gradientEquipe != null) {
-            int[] dir = choisirDirectionGradient(p, gradientEquipe);
-
-            float gx = dir[0]*0.25f ; // direction gradient
-            float gy = dir[1] *0.25f;
-
-            float dx = cibleX - p.getX();// direction vers la cible
-            float dy = cibleY - p.getY();
-            float norm = (float)Math.sqrt(dx*dx + dy*dy);
-            if (norm > 0) {
-                dx /= norm;
-                dy /= norm;
-            }
-
-            vx = gx * 0.25f + dx * 0.15f; // combine des deux influences gradiant et cible
-            vy = gy * 0.25f + dy * 0.15f;
-
-    }
-
-                // repulsiondes particules proches
-                float repelX = 0, repelY = 0;
-                float distSeuilRepulsion = 0.45f; // plus petit = particules très serrées
-                for (Particule autre : equipe.getParticules()) {
-                    if (autre == p)
-                        continue;
-                    float diffX = p.getX() - autre.getX();
-                    float diffY = p.getY() - autre.getY();
-                    float distPart = (float) Math.sqrt(diffX * diffX + diffY * diffY);
-                    if (distPart > 0 && distPart < distSeuilRepulsion) {
-                        repelX += diffX / distPart / distPart * 0.5f; // repulsion plus faible
-                        repelY += diffY / distPart / distPart * 0.5f;
-                    }
-                }
-
-                double angle = 2 * Math.PI * Math.random();
-                float randomX = 0.003f * (float) Math.cos(angle);
-                float randomY = 0.003f * (float) Math.sin(angle);
-
-                vx += repelX + randomX;
-                vy += repelY + randomY;
-
-                float vitesseMax = 0.35f;
-                float vitesseActuelle = (float) Math.sqrt(vx * vx + vy * vy);
-                if (vitesseActuelle > vitesseMax) {
-                    vx = vx / vitesseActuelle * vitesseMax;
-                    vy = vy / vitesseActuelle * vitesseMax;
-                }
-
-                p.setVitesse(vx, vy);
-                p.updatePosition();
-
-                // limites carte
-                float nx = Math.max(0, Math.min(carte.getLargeur() - 1, p.getX()));
-                float ny = Math.max(0, Math.min(carte.getHauteur() - 1, p.getY()));
-                
-                int testX = Math.round(nx);
-                int testY = Math.round(ny);
-    
-                if (carte.estObstacle(testX, testY)) { // obstacle detecte       
-                    p.setPosition(oldX, oldY); // la particule ne bouge pas
-                    continue;
-                }
             
-                p.setPosition(nx, ny);// pas obstacle donc on met a jour la position
-                
+                int[][] grad = equipe.getGradient();
+                if (grad == null) continue;
+            
+                Position next = choisirDirectionLW(p, grad);
+            
+                if (next == null) continue; // ne bouge pas
+            
+                p.setPosition(next.x(), next.y());
                 carte.mettreAJourParticule(p, oldX, oldY);
-                
             }
+            
         }
     }
 
@@ -264,5 +206,54 @@ private int[] choisirDirectionGradient(Particule p, int[][] grad) {
 
     return new int[]{0,0}; 
 }
+private Position choisirDirectionLW(Particule p, int[][] grad) {
+    int x = Math.round(p.getX());
+    int y = Math.round(p.getY());
+
+    int g0 = grad[y][x];
+
+    Position[] voisins = new Position[] {
+        new Position(x+1, y),
+        new Position(x-1, y),
+        new Position(x, y+1),
+        new Position(x, y-1)
+    };
+
+    Position principale = null;
+    Position bonne = null;
+    Position acceptable = null;
+
+    int minGradient = Integer.MAX_VALUE;
+
+    for (Position v : voisins) {
+        int nx = v.x();
+        int ny = v.y();
+
+        if (nx < 0 || nx >= carte.getLargeur() || ny < 0 || ny >= carte.getHauteur())
+            continue;
+
+        if (carte.estObstacle(nx, ny)) continue;
+
+        int gv = grad[ny][nx];
+
+        if (gv < minGradient) {
+            minGradient = gv;
+            principale = v;
+        }
+
+        if (gv < g0) {
+            bonne = v;
+        } else if (gv == g0) {
+            acceptable = v;
+        }
+    }
+
+    if (principale != null && carte.estLibre(principale.x(), principale.y())) return principale;
+    if (bonne != null && carte.estLibre(bonne.x(), bonne.y())) return bonne;
+    if (acceptable != null && carte.estLibre(acceptable.x(), acceptable.y())) return acceptable;
+
+    return null;
+}
+
 
 }

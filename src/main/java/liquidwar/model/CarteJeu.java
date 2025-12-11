@@ -88,14 +88,17 @@ public class CarteJeu {
     public boolean placerObstacle(int x, int y) {
         if (x < 0 || x >= largeur || y < 0 || y >= hauteur)
             return false;
-
+    
+        if (x < 5) return false; // ici j'empeche de mettre un obastacle dans les 5er colonnes
+    
         Case c = getCase(x, y);
         if (c != null && c.getType() != Case.TypeCase.PARTICULE) {
             c.setType(Case.TypeCase.OBSTACLE);
             return true;
         }
-        return false; // obstacle non placee
+        return false;
     }
+    
 
     public void mettreAJourParticule(Particule p, int oldX, int oldY) {
 
@@ -133,9 +136,11 @@ public class CarteJeu {
         return c != null && c.getType() == Case.TypeCase.OBSTACLE;
     }
     public void stylecarte() {
-        int cx = largeur / 2; // pourle rond central
+        int cx = largeur / 2;
         int cy = hauteur / 2;
-        int r = 20; // taille du rond central
+        int r = 20;
+    
+        // Rond central
         for (int y = cy - r; y <= cy + r; y++) {
             for (int x = cx - r; x <= cx + r; x++) {
                 int dx = x - cx;
@@ -145,13 +150,14 @@ public class CarteJeu {
                 }
             }
         }
-        placerRond(20, 20, 18); // coin hautgauche
-        placerRond(largeur - 25, 20, 18); //haut-droit
-        placerRond(largeur / 2, hauteur - 20, 22); // bas centre
     
-        genererVagueVerticale(largeur / 4, 8); // vague gauche
-        genererVagueVerticale(3 * largeur / 4, 8); 
+        placerRond(20, 20, 18);    
+        placerRond(largeur / 2, hauteur - 20, 22); 
+    
+        genererVagueVerticale(largeur / 4, 8);
+       // genererVagueVerticale(3 * largeur / 4, 8);
     }
+    
     private void placerRond(int cx, int cy, int r) {
         for (int y = cy - r; y <= cy + r; y++) {
             for (int x = cx - r; x <= cx + r; x++) {
@@ -169,6 +175,11 @@ public class CarteJeu {
             int offset = (int)(Math.sin(y * 0.1) * amplitude);
             placerObstacle(col + offset, y);
         }
+    }
+
+    public boolean estDansCarte(Position pos) {
+        return pos.x() >= 0 && pos.x() < largeur &&
+               pos.y() >= 0 && pos.y() < hauteur;
     }
     
     
