@@ -51,11 +51,10 @@ public class FenetreJeu extends JFrame {
             Equipe rouge = new Equipe(1, "rouge", 0xFF0000, cibleRouge);
             Equipe bleu  = new Equipe(2, "bleu", 0x0000FF, cibleBleu);
 
-            genererNuage(carte, rouge, 50, 50);
-            genererNuage(carte, bleu, carte.getLargeur() - 20, carte.getHauteur() / 2);
+            genererNuage(carte, rouge, 30, 120, 20, 20, 800);   
+            genererNuage(carte, bleu, 170, 30, 20, 20, 800);    
 
-            System.out.println("rouge : " + rouge.getParticules().size()); // pour verif 
-            System.out.println("bleu : " + bleu.getParticules().size());
+            
 
             List<Equipe> equipes = List.of(rouge, bleu);
 
@@ -67,30 +66,26 @@ public class FenetreJeu extends JFrame {
     }
 
 
-    private static void genererNuage(CarteJeu carte, Equipe equipe, float centreX, float centreY) {
+    private static void genererNuage(CarteJeu carte, Equipe equipe,
+                                 float centreX, float centreY,
+                                 float rayonX, float rayonY,
+                                 int nbParticules) {
 
-        float rayonX = 20;
-        float rayonY = 20;
-        int nbParticules = 1000; 
+    for (int i = 0; i < nbParticules; i++) {
+        double angle = 2 * Math.PI * Math.random();
+        float rX = (float)(rayonX * Math.random());
+        float rY = (float)(rayonY * Math.random());
 
-        for (int i = 0; i < nbParticules; i++) {
+        float x = centreX + rX * (float)Math.cos(angle);
+        float y = centreY + rY * (float)Math.sin(angle);
 
-            double angle = 2 * Math.PI * Math.random();
-            float rX = (float)(rayonX * Math.random());
-            float rY = (float)(rayonY * Math.random());
+        Particule p = new Particule(equipe, x, y, 100, 0, 100);
 
-            float x = centreX + rX * (float)Math.cos(angle);
-            float y = centreY + rY * (float)Math.sin(angle);
-
-            int ix = Math.round(x);
-            int iy = Math.round(y);
-
-            if (!carte.estLibre(ix, iy)) continue; // évite obstacles + collisions spawn
-
-            Particule p = new Particule(equipe, x, y, 100, 0, 100);
-
-            equipe.ajouterParticule(p);
-            carte.placerParticule(ix, iy, p);
-        }
+        equipe.ajouterParticule(p);
+        carte.placerParticule(Math.round(x), Math.round(y), p);
     }
 }
+
+}
+
+
