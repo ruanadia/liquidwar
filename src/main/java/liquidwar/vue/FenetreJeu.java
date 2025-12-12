@@ -83,5 +83,3 @@ public class FenetreJeu extends JFrame {
 }
 
 }
-
-

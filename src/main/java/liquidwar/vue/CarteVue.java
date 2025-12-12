@@ -117,31 +117,40 @@ public class CarteVue extends JPanel {
         }
 
         // dessiner la cible comme un petit cercle rouge
-        Cible cible = moteur.getCibleEquipe(idEquipe);
-        if (cible != null) {
-            int cx = Math.round(cible.getPosition().x() * tailleCase);
-            int cy = Math.round(cible.getPosition().y() * tailleCase);
+        // DESSIN DES CIBLES ROUGE (id 1) ET BLEUE (id 2)
+Graphics2D g2 = (Graphics2D) g;
+g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f)); // sécurité
 
-            int rayonExterieur = 6;
-            int rayonInterieur = 3;
+for (int equipeId = 1; equipeId <= 2; equipeId++) {
 
-            Graphics2D g2 = (Graphics2D) g;
+    Cible cible = moteur.getCibleEquipe(equipeId);
+    if (cible == null) continue;
 
-            g2.setColor(Color.PINK);
-            for (int i = 3; i >= 1; i--) {
-                float alpha = 0.1f * i; // les bord un peu transparents
-                g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
-                int r = rayonExterieur + i * 3;
-                g2.fillOval(cx - r, cy - r, 2 * r, 2 * r);
-            }
+    int cx = Math.round(cible.getPosition().x() * tailleCase);
+    int cy = Math.round(cible.getPosition().y() * tailleCase);
 
-            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
-            g2.setColor(Color.PINK);
-            g2.fillOval(cx - rayonExterieur, cy - rayonExterieur, 2 * rayonExterieur, 2 * rayonExterieur);
+    int rayonExterieur = 6;
+    int rayonInterieur = 3;
 
-            g2.setColor(Color.BLACK);
-            g2.fillOval(cx - rayonInterieur, cy - rayonInterieur, 2 * rayonInterieur, 2 * rayonInterieur);
-        }
+    // couleur suivant l'équipe
+    Color couleur = (equipeId == 1) ? Color.PINK : Color.CYAN;
+
+    for (int i = 3; i >= 1; i--) { // pr le  halo
+        float alpha = 0.1f * i;
+        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
+        int r = rayonExterieur + i * 3;
+        g2.setColor(couleur);
+        g2.fillOval(cx - r, cy - r, 2 * r, 2 * r);
+    }
+
+    g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
+
+    g2.setColor(couleur);
+    g2.fillOval(cx - rayonExterieur, cy - rayonExterieur, 2 * rayonExterieur, 2 * rayonExterieur);
+    g2.setColor(Color.BLACK);
+    g2.fillOval(cx - rayonInterieur, cy - rayonInterieur, 2 * rayonInterieur, 2 * rayonInterieur);
+}
+
         dessinerTimer(g);
     }
 
@@ -191,3 +200,4 @@ public class CarteVue extends JPanel {
     }
     
 }
+
