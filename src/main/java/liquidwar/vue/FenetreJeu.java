@@ -50,8 +50,8 @@ public class FenetreJeu extends JFrame {
             Equipe rouge = new Equipe(1, "rouge", 0xFF0000, cibleRouge);
             Equipe bleu  = new Equipe(2, "bleu", 0x0000FF, cibleBleu);
 
-            genererNuage(carte, rouge, 30, 120, 20, 20, 800);   
-            genererNuage(carte, bleu, 170, 30, 20, 20, 800);    
+            genererNuage(carte, rouge, 30, 120, 20, 20, 500);   
+            genererNuage(carte, bleu, 170, 30, 20, 20, 500);    
 
             
 

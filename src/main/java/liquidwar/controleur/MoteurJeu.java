@@ -300,7 +300,7 @@ public Position choisirDirectionLW(Particule p, int[][] grad) {
         boolean convertie = cible.subirAttaque(1, attaquant.getEquipe());
 
         if (convertie) {
-            System.out.println("une conversion a eu lieu !");
+            //System.out.println("une conversion a eu lieu !"); pour debug
         }
     }
     private void retirerParticuleDeSonEquipe(Particule p) {
