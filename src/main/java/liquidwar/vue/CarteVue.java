@@ -77,6 +77,9 @@ public class CarteVue extends JPanel {
                     }
                 }
             });
+            new javax.swing.Timer(1, e -> {
+                mettreAJourCibleBleue();  // la cible est mise à jour à 60 FPS
+            }).start();
             
 
 
@@ -84,7 +87,7 @@ public class CarteVue extends JPanel {
 
     @Override
     protected void paintComponent(Graphics g) {
-        mettreAJourCibleBleue();
+        //mettreAJourCibleBleue();
         super.paintComponent(g);
         g.setColor(Color.BLACK);
         g.fillRect(0, 0, getWidth(), getHeight());
@@ -147,6 +150,7 @@ for (int equipeId = 1; equipeId <= 2; equipeId++) {
 
     g2.setColor(couleur);
     g2.fillOval(cx - rayonExterieur, cy - rayonExterieur, 2 * rayonExterieur, 2 * rayonExterieur);
+
     g2.setColor(Color.BLACK);
     g2.fillOval(cx - rayonInterieur, cy - rayonInterieur, 2 * rayonInterieur, 2 * rayonInterieur);
 }
@@ -181,7 +185,7 @@ for (int equipeId = 1; equipeId <= 2; equipeId++) {
         float x = cible.getPosition().x();
         float y = cible.getPosition().y();
     
-        float speed = 0.6f; 
+        float speed = 2.0f; 
     
         if (up) y -= speed;
         if (down) y += speed;
