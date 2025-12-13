@@ -58,7 +58,7 @@ task jsondemo(type: JavaExec) {
 }
 
 application {
-    mainClass = 'fr.uparis.informatique.cpoo5.jfxdemo.HelloJavaFX'
+    mainClass = 'liquidwar.vue.FenetreJeu'
 }
 
 java {
