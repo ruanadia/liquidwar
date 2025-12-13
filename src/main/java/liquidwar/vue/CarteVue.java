@@ -158,6 +158,9 @@ public class CarteVue extends JPanel {
 
         dessinerTimer(g);
         dessinerBarreEnergie(g);
+        if(moteur.estTermine()){
+            finDePartie(g);
+        }
     }
 
     private void dessinerTimer(Graphics g) {
@@ -233,4 +236,36 @@ public class CarteVue extends JPanel {
         g.drawRect(0,y, getWidth()-1,hauteurBarre-1);
     }
 
+    private void finDePartie(Graphics g){
+        g.setColor(new Color(0,0,0,150));
+        g.fillRect(0, 0, getWidth(), getHeight());
+
+        String msg;
+        Color couleurTxt;
+
+        Equipe gagnant=moteur.getGagnant();
+        if(gagnant!=null){
+            msg="VICTOIRE : "+gagnant.getNom().toUpperCase()+" !";
+            couleurTxt=new Color(gagnant.getCouleur());
+        } else {
+            msg="EGALITE !";
+            couleurTxt=Color.WHITE;
+        }
+        g.setFont(new Font("Arial",Font.BOLD,40));
+        FontMetrics metrics=g.getFontMetrics();
+        int x=(getWidth()-metrics.stringWidth(msg))/2;
+        int y=(getHeight()/2);
+
+        g.setColor(Color.DARK_GRAY);
+        g.drawString(msg, x+2, y+2);
+
+        g.setColor(couleurTxt);
+        g.drawString(msg,x,y);
+
+        g.setFont(new Font("Arial", Font.PLAIN, 20));
+        String sousTitre = "Fermez la fenêtre pour quitter";
+        int x2 = (getWidth() - g.getFontMetrics().stringWidth(sousTitre)) / 2;
+        g.setColor(Color.LIGHT_GRAY);
+        g.drawString(sousTitre, x2, y + 40);
+    }
 }

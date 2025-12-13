@@ -23,6 +23,7 @@ public class MoteurJeu {
 
     private volatile long debutPartie;
     private final long DUREE_PARTIE = 180_000;
+    private volatile Equipe gagnant=null;
 
     public MoteurJeu(CarteJeu carte, List<Equipe> equipes) {
         this.carte = carte;
@@ -36,13 +37,14 @@ public class MoteurJeu {
             while (enCours) {
 
                 if (getTempsRestant() <= 0) {
+                    determinerGagnant();
                     arreter();
-                    System.out.println("fin de la partie");
                     break;
                 }
 
                 long debut = System.currentTimeMillis();
                 update();
+                verifierVictoire();
 
                 long duree = System.currentTimeMillis() - debut;
                 if (duree < 16) { // pour ~60 FPS = 16ms par frame
@@ -333,5 +335,44 @@ public class MoteurJeu {
 
     public List<Equipe> getEquipes() {
         return equipes;
+    }
+
+    private void verifierVictoire(){
+        int equipesVivantes=0;
+        Equipe lastSurvivant=null;
+        for(Equipe e:equipes){
+            if(e.getNbParticules()>0){
+                equipesVivantes++;
+                lastSurvivant=e;
+            }
+        }
+        if(equipesVivantes<=1){
+            this.gagnant=lastSurvivant;
+            arreter();
+        }
+    }
+
+    private void determinerGagnant(){
+        Equipe best=null;
+        int maxParticules=-1;
+
+        for(Equipe e:equipes){
+            int nb=e.getNbParticules();
+            if(nb>maxParticules){
+                maxParticules=nb;
+                best=e;
+            } else if(nb==maxParticules){
+                best=null;
+            }
+        }
+        this.gagnant=best;
+    }
+
+    public Equipe getGagnant(){
+        return gagnant;
+    }
+
+    public boolean estTermine(){
+        return !enCours;
     }
 }
