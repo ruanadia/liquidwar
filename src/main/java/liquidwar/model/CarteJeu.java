@@ -88,9 +88,10 @@ public class CarteJeu {
     public boolean placerObstacle(int x, int y) {
         if (x < 0 || x >= largeur || y < 0 || y >= hauteur)
             return false;
-    
-        if (x < 5) return false; // ici j'empeche de mettre un obastacle dans les 5er colonnes
-    
+
+        if (x < 5)
+            return false; // ici j'empeche de mettre un obastacle dans les 5er colonnes
+
         Case c = getCase(x, y);
         if (c != null && c.getType() != Case.TypeCase.PARTICULE) {
             c.setType(Case.TypeCase.OBSTACLE);
@@ -98,7 +99,6 @@ public class CarteJeu {
         }
         return false;
     }
-    
 
     public void mettreAJourParticule(Particule p, int oldX, int oldY) {
 
@@ -130,31 +130,33 @@ public class CarteJeu {
             }
         }
     }
-    
+
     public boolean estObstacle(int x, int y) {
         Case c = getCase(x, y);
         return c != null && c.getType() == Case.TypeCase.OBSTACLE;
     }
+
     public void stylecarte() {
-        placerZoneCirculaire(largeur/2, hauteur/2, 32);
-    
-        placerZoneCirculaire(largeur/4, hauteur/6, 18);
-        placerZoneCirculaire(3*largeur/4, hauteur/6, 18);
-    
-        placerZoneCirculaire(largeur/2, 4*hauteur/5, 25);
-    
-        genererVagueVerticale(largeur/3, 10, 0.12);
-        genererVagueVerticale(2*largeur/3, 10, 0.12);
-    
-        genererVagueHorizontale(hauteur/2, 12, 0.1);
+        placerZoneCirculaire(largeur / 2, hauteur / 2, 32);
+
+        placerZoneCirculaire(largeur / 4, hauteur / 6, 18);
+        placerZoneCirculaire(3 * largeur / 4, hauteur / 6, 18);
+
+        placerZoneCirculaire(largeur / 2, 4 * hauteur / 5, 25);
+
+        genererVagueVerticale(largeur / 3, 10, 0.12);
+        genererVagueVerticale(2 * largeur / 3, 10, 0.12);
+
+        genererVagueHorizontale(hauteur / 2, 12, 0.1);
     }
+
     private void placerZoneCirculaire(int cx, int cy, int r) {
         for (int y = cy - r; y <= cy + r; y++) {
             for (int x = cx - r; x <= cx + r; x++) {
                 int dx = x - cx;
                 int dy = y - cy;
-                double d = Math.sqrt(dx*dx + dy*dy);
-    
+                double d = Math.sqrt(dx * dx + dy * dy);
+
                 // bord lissé
                 if (d <= r + Math.sin(d * 0.3) * 2) {
                     placerObstacle(x, y);
@@ -162,34 +164,65 @@ public class CarteJeu {
             }
         }
     }
+
     private void genererVagueVerticale(int col, int amplitude, double freq) {
         for (int y = 5; y < hauteur - 5; y++) {
-            int offset = (int)(Math.sin(y * freq) * amplitude);
+            int offset = (int) (Math.sin(y * freq) * amplitude);
             placerObstacle(col + offset, y);
-    
+
             // épaissir légèrement la vague
             placerObstacle(col + offset + 1, y);
             placerObstacle(col + offset - 1, y);
         }
     }
+
     private void genererVagueHorizontale(int row, int amplitude, double freq) {
         for (int x = 5; x < largeur - 5; x++) {
-            int offset = (int)(Math.cos(x * freq) * amplitude);
+            int offset = (int) (Math.cos(x * freq) * amplitude);
             placerObstacle(x, row + offset);
-    
+
             // léger épaississement
             placerObstacle(x, row + offset + 1);
             placerObstacle(x, row + offset - 1);
         }
     }
-    
-    
-    
 
     public boolean estDansCarte(Position pos) {
         return pos.x() >= 0 && pos.x() < largeur &&
-               pos.y() >= 0 && pos.y() < hauteur;
+                pos.y() >= 0 && pos.y() < hauteur;
     }
-    
 
+    public void genererCarte() {
+        initialiserVide();
+        int nombreIlots = 17; 
+        int taillePinceauMin = 6;
+        int taillePinceauMax = 12;
+        int longueurTrace = 50;
+        for (int i = 0; i < nombreIlots; i++) {
+            double x = Math.random() * largeur;
+            double y = Math.random() * hauteur;
+
+            int rayon = (int) (taillePinceauMin + Math.random() * (taillePinceauMax - taillePinceauMin));
+
+            for (int pas = 0; pas < longueurTrace; pas++) {
+                peindreCercleObstacle((int) x, (int) y, rayon);
+                x += (Math.random()*2-1)*1.5;
+                y += (Math.random()*2-1)*1.5;
+                if (x < 0 || x >= largeur || y < 0 || y >= hauteur)
+                    break;
+            }
+        }
+    }
+
+    private void peindreCercleObstacle(int cx, int cy, int r) {
+        for (int y = cy - r; y <= cy + r; y++) {
+            for (int x = cx - r; x <= cx + r; x++) {
+                if (x >= 0 && x < largeur && y >= 0 && y < hauteur) {
+                    if ((x - cx) * (x - cx) + (y - cy) * (y - cy) <= r * r) {
+                        placerObstacle(x, y);
+                    }
+                }
+            }
+        }
+    }
 }

@@ -42,8 +42,8 @@ public class FenetreJeu extends JFrame {
         SwingUtilities.invokeLater(() -> {
 
             CarteJeu carte = new CarteJeu(200, 150);
-            carte.stylecarte();
-
+            //carte.stylecarte();
+            carte.genererCarte();
             Cible cibleRouge = new Cible(50, 50);
             Cible cibleBleu = new Cible(100, 30);
 

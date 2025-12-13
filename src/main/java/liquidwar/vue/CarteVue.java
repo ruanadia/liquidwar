@@ -316,4 +316,5 @@ public class CarteVue extends JPanel {
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btn.setSize(250, 70); 
     }
+
 }
