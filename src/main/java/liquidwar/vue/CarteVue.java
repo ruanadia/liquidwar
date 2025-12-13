@@ -31,7 +31,7 @@ public class CarteVue extends JPanel {
     private final MoteurJeu moteur;
     private final int idEquipe;
     private boolean up = false, down = false, left = false, right = false;
-    private final JButton btnRejouer,btnQuitter;
+    private final JButton btnRejouer, btnQuitter;
 
     public CarteVue(CarteJeu carte, int tailleCase, MoteurJeu moteur, int idEquipe) {
         this.carte = carte;
@@ -92,7 +92,7 @@ public class CarteVue extends JPanel {
 
         btnRejouer = new JButton("REJOUER");
         styleBouton(btnRejouer, new Color(34, 139, 34)); // Vert forêt
-        
+
         // Action : Fermer la fenêtre actuelle et relancer le main
         btnRejouer.addActionListener(e -> {
             JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
@@ -127,14 +127,32 @@ public class CarteVue extends JPanel {
         for (int y = 0; y < carte.getHauteur(); y++) {
             for (int x = 0; x < carte.getLargeur(); x++) {
                 if (carte.estObstacle(x, y)) {
-                    int px=x*tailleCase;
-                    int py=y*tailleCase;
-                    g.setColor(Color.DARK_GRAY);
-                    g.fillRect(px, py,tailleCase, tailleCase);
-                    g.setColor(new Color(100,100,100));
-                    g.fillRect(px+1, py+1, tailleCase-2, tailleCase-2);
-                    g.setColor(new Color(150,150,150));
-                    g.fillRect(px+1, py+1, 2, 2);
+                    int px = x * tailleCase;
+                    int py = y * tailleCase;
+                    int bordure = Math.max(2, tailleCase / 4);
+
+                    g.setColor(Color.GRAY);
+                    g.fillRect(px, py, tailleCase, tailleCase);
+                    g.setColor(new Color(200, 200, 200));
+
+                    if (!carte.estObstacle(x, y - 1)) {
+                        g.fillRect(px, py, tailleCase, bordure);
+                    }
+                    if (!carte.estObstacle(x - 1, y)) {
+                        g.fillRect(px, py, bordure, tailleCase);
+                    }
+                    g.setColor(new Color(30, 30, 30));
+                    if (!carte.estObstacle(x, y + 1)) {
+                        g.fillRect(px, py + tailleCase - bordure, tailleCase, bordure);
+                    }
+                    if (!carte.estObstacle(x + 1, y)) {
+                        g.fillRect(px + tailleCase - bordure, py, bordure, tailleCase);
+                    }
+                    if (!carte.estObstacle(x - 1, y) && !carte.estObstacle(x, y - 1)) {
+                        g.setColor(new Color(200, 200, 200));
+                        g.fillRect(px, py, bordure, bordure);
+                    }
+
                 }
             }
         }
@@ -191,7 +209,7 @@ public class CarteVue extends JPanel {
 
         dessinerTimer(g);
         dessinerBarreEnergie(g);
-        if(moteur.estTermine()){
+        if (moteur.estTermine()) {
             finDePartie(g);
         }
     }
@@ -245,64 +263,65 @@ public class CarteVue extends JPanel {
         moteur.setCibleEquipe(2, x, y);
     }
 
-    private void dessinerBarreEnergie(Graphics g){
-        List<Equipe> equipes=moteur.getEquipes();
-        int totalParticules=0;
-        for(Equipe e:equipes){
-            totalParticules+=e.getNbParticules();
+    private void dessinerBarreEnergie(Graphics g) {
+        List<Equipe> equipes = moteur.getEquipes();
+        int totalParticules = 0;
+        for (Equipe e : equipes) {
+            totalParticules += e.getNbParticules();
         }
-        if (totalParticules==0)return;
-        int hauteurBarre=10;
-        int y=getHeight()-hauteurBarre;
-        int x=0;
-        int largeurTotale=getWidth();
+        if (totalParticules == 0)
+            return;
+        int hauteurBarre = 10;
+        int y = getHeight() - hauteurBarre;
+        int x = 0;
+        int largeurTotale = getWidth();
 
-        for(Equipe e:equipes){
-            int nb=e.getParticules().size();
-            int largeurEquipe=(int)((nb/(float)totalParticules)*largeurTotale);
+        for (Equipe e : equipes) {
+            int nb = e.getParticules().size();
+            int largeurEquipe = (int) ((nb / (float) totalParticules) * largeurTotale);
             g.setColor(new Color(e.getCouleur()));
             g.fillRect(x, y, largeurEquipe, hauteurBarre);
-            x+=largeurEquipe;
+            x += largeurEquipe;
         }
 
         g.setColor(Color.WHITE);
-        g.drawRect(0,y, getWidth()-1,hauteurBarre-1);
+        g.drawRect(0, y, getWidth() - 1, hauteurBarre - 1);
     }
 
-    private void finDePartie(Graphics g){
-        g.setColor(new Color(0,0,0,150));
+    private void finDePartie(Graphics g) {
+        g.setColor(new Color(0, 0, 0, 150));
         g.fillRect(0, 0, getWidth(), getHeight());
 
         String msg;
         Color couleurTxt;
 
-        Equipe gagnant=moteur.getGagnant();
-        if(gagnant!=null){
-            msg="VICTOIRE : "+gagnant.getNom().toUpperCase()+" !";
-            couleurTxt=new Color(gagnant.getCouleur());
+        Equipe gagnant = moteur.getGagnant();
+        if (gagnant != null) {
+            msg = "VICTOIRE : " + gagnant.getNom().toUpperCase() + " !";
+            couleurTxt = new Color(gagnant.getCouleur());
         } else {
-            msg="EGALITE !";
-            couleurTxt=Color.WHITE;
+            msg = "EGALITE !";
+            couleurTxt = Color.WHITE;
         }
-        g.setFont(new Font("Arial",Font.BOLD,75));
-        FontMetrics metrics=g.getFontMetrics();
-        int x=(getWidth()-metrics.stringWidth(msg))/2;
-        int y=(getHeight()/2)-20;
+        g.setFont(new Font("Arial", Font.BOLD, 75));
+        FontMetrics metrics = g.getFontMetrics();
+        int x = (getWidth() - metrics.stringWidth(msg)) / 2;
+        int y = (getHeight() / 2) - 20;
 
         g.setColor(Color.DARK_GRAY);
-        g.drawString(msg, x+4, y+4);
+        g.drawString(msg, x + 4, y + 4);
 
         g.setColor(couleurTxt);
-        g.drawString(msg,x,y);
+        g.drawString(msg, x, y);
 
         if (!btnRejouer.isVisible()) {
-            int buttonY = y + 80; 
+            int buttonY = y + 80;
             int centerX = getWidth() / 2;
             btnRejouer.setLocation(centerX - 260, buttonY);
             btnRejouer.setVisible(true);
             btnQuitter.setLocation(centerX + 10, buttonY);
             btnQuitter.setVisible(true);
-            revalidate(); 
+            revalidate();
             repaint();
         }
     }
@@ -314,7 +333,7 @@ public class CarteVue extends JPanel {
         btn.setFont(new Font("Arial", Font.BOLD, 26));
         btn.setBorderPainted(false);
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btn.setSize(250, 70); 
+        btn.setSize(250, 70);
     }
 
 }
