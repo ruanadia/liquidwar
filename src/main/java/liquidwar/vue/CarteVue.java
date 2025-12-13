@@ -13,8 +13,12 @@ import java.awt.event.MouseMotionAdapter;
 import java.util.List;
 import java.util.ListResourceBundle;
 
+import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
+import java.awt.Cursor;
 import liquidwar.controleur.MoteurJeu;
 import liquidwar.model.CarteJeu;
 import liquidwar.model.Cible;
@@ -27,12 +31,14 @@ public class CarteVue extends JPanel {
     private final MoteurJeu moteur;
     private final int idEquipe;
     private boolean up = false, down = false, left = false, right = false;
+    private final JButton btnRejouer,btnQuitter;
 
     public CarteVue(CarteJeu carte, int tailleCase, MoteurJeu moteur, int idEquipe) {
         this.carte = carte;
         this.tailleCase = tailleCase;
         this.moteur = moteur;
         this.idEquipe = idEquipe;
+        this.setLayout(null);
 
         int largeurPx = carte.getLargeur() * tailleCase;
         int hauteurPx = carte.getHauteur() * tailleCase;
@@ -83,6 +89,29 @@ public class CarteVue extends JPanel {
         new javax.swing.Timer(1, e -> {
             mettreAJourCibleBleue(); // la cible est mise à jour à 60 FPS
         }).start();
+
+        btnRejouer = new JButton("REJOUER");
+        styleBouton(btnRejouer, new Color(34, 139, 34)); // Vert forêt
+        
+        // Action : Fermer la fenêtre actuelle et relancer le main
+        btnRejouer.addActionListener(e -> {
+            JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+            topFrame.dispose(); // Ferme la fenêtre actuelle
+            FenetreJeu.main(null); // Relance le jeu à zéro (nouvelle génération aléatoire)
+        });
+
+        // 3. CRÉATION DU BOUTON QUITTER
+        btnQuitter = new JButton("QUITTER");
+        styleBouton(btnQuitter, new Color(178, 34, 34)); // Rouge feu
+
+        // Action : Tout arrêter
+        btnQuitter.addActionListener(e -> System.exit(0));
+
+        // 4. On les ajoute au panneau mais on les cache
+        add(btnRejouer);
+        add(btnQuitter);
+        btnRejouer.setVisible(false);
+        btnQuitter.setVisible(false);
     }
 
     @Override
@@ -98,10 +127,14 @@ public class CarteVue extends JPanel {
         for (int y = 0; y < carte.getHauteur(); y++) {
             for (int x = 0; x < carte.getLargeur(); x++) {
                 if (carte.estObstacle(x, y)) {
-                    g.setColor(Color.GRAY);
-                    g.fillRoundRect(x * tailleCase, y * tailleCase,
-                            tailleCase, tailleCase,
-                            tailleCase, tailleCase);
+                    int px=x*tailleCase;
+                    int py=y*tailleCase;
+                    g.setColor(Color.DARK_GRAY);
+                    g.fillRect(px, py,tailleCase, tailleCase);
+                    g.setColor(new Color(100,100,100));
+                    g.fillRect(px+1, py+1, tailleCase-2, tailleCase-2);
+                    g.setColor(new Color(150,150,150));
+                    g.fillRect(px+1, py+1, 2, 2);
                 }
             }
         }
@@ -251,21 +284,36 @@ public class CarteVue extends JPanel {
             msg="EGALITE !";
             couleurTxt=Color.WHITE;
         }
-        g.setFont(new Font("Arial",Font.BOLD,40));
+        g.setFont(new Font("Arial",Font.BOLD,75));
         FontMetrics metrics=g.getFontMetrics();
         int x=(getWidth()-metrics.stringWidth(msg))/2;
-        int y=(getHeight()/2);
+        int y=(getHeight()/2)-20;
 
         g.setColor(Color.DARK_GRAY);
-        g.drawString(msg, x+2, y+2);
+        g.drawString(msg, x+4, y+4);
 
         g.setColor(couleurTxt);
         g.drawString(msg,x,y);
 
-        g.setFont(new Font("Arial", Font.PLAIN, 20));
-        String sousTitre = "Fermez la fenêtre pour quitter";
-        int x2 = (getWidth() - g.getFontMetrics().stringWidth(sousTitre)) / 2;
-        g.setColor(Color.LIGHT_GRAY);
-        g.drawString(sousTitre, x2, y + 40);
+        if (!btnRejouer.isVisible()) {
+            int buttonY = y + 80; 
+            int centerX = getWidth() / 2;
+            btnRejouer.setLocation(centerX - 260, buttonY);
+            btnRejouer.setVisible(true);
+            btnQuitter.setLocation(centerX + 10, buttonY);
+            btnQuitter.setVisible(true);
+            revalidate(); 
+            repaint();
+        }
+    }
+
+    private void styleBouton(JButton btn, Color bgColor) {
+        btn.setBackground(bgColor);
+        btn.setForeground(Color.WHITE);
+        btn.setFocusPainted(false);
+        btn.setFont(new Font("Arial", Font.BOLD, 26));
+        btn.setBorderPainted(false);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btn.setSize(250, 70); 
     }
 }
