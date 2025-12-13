@@ -63,4 +63,8 @@ public class Equipe {
     public int getId() {
         return numero;
     }
+
+    public synchronized int getNbParticules(){
+        return particules.size();
+    }
 }

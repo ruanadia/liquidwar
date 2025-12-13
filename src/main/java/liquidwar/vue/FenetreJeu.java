@@ -45,15 +45,13 @@ public class FenetreJeu extends JFrame {
             carte.stylecarte();
 
             Cible cibleRouge = new Cible(50, 50);
-            Cible cibleBleu  = new Cible(100, 30); 
+            Cible cibleBleu = new Cible(100, 30);
 
             Equipe rouge = new Equipe(1, "rouge", 0xFF0000, cibleRouge);
-            Equipe bleu  = new Equipe(2, "bleu", 0x0000FF, cibleBleu);
+            Equipe bleu = new Equipe(2, "bleu", 0x0000FF, cibleBleu);
 
-            genererNuage(carte, rouge, 30, 120, 20, 20, 500);   
-            genererNuage(carte, bleu, 170, 30, 20, 20, 500);    
-
-            
+            genererNuage(carte, rouge, 30, 120, 20, 20, 500);
+            genererNuage(carte, bleu, 170, 30, 20, 20, 500);
 
             List<Equipe> equipes = List.of(rouge, bleu);
 
@@ -64,22 +62,29 @@ public class FenetreJeu extends JFrame {
         });
     }
 
+    private static void genererNuage(CarteJeu carte, Equipe equipe, float centreX, float centreY, float rayonX,
+            float rayonY, int nbParticules) {
+        int particulesCrees = 0;
+        int tentatives = 0;
+        while (particulesCrees < nbParticules && tentatives < nbParticules * 10) {
+            tentatives++;
 
-    private static void genererNuage(CarteJeu carte, Equipe equipe, float centreX, float centreY,float rayonX, float rayonY,int nbParticules) {
+            double angle = 2 * Math.PI * Math.random();
+            float rX = (float) (rayonX * Math.random());
+            float rY = (float) (rayonY * Math.random());
 
-    for (int i = 0; i < nbParticules; i++) {
-        double angle = 2 * Math.PI * Math.random();
-        float rX = (float)(rayonX * Math.random());
-        float rY = (float)(rayonY * Math.random());
+            float x = centreX + rX * (float) Math.cos(angle);
+            float y = centreY + rY * (float) Math.sin(angle);
+            int caseX = Math.round(x);
+            int caseY = Math.round(y);
 
-        float x = centreX + rX * (float)Math.cos(angle);
-        float y = centreY + rY * (float)Math.sin(angle);
-
-        Particule p = new Particule(equipe, x, y, 100, 0, 100);
-
-        equipe.ajouterParticule(p);
-        carte.placerParticule(Math.round(x), Math.round(y), p);
+            if (caseX >= 0 && caseX < carte.getLargeur() && caseY >= 0 && caseY < carte.getHauteur()
+                    && !carte.estObstacle(caseX, caseY)) {
+                Particule p = new Particule(equipe, x, y, 100, 0, 100);
+                equipe.ajouterParticule(p);
+                carte.placerParticule(caseX, caseY, p);
+                particulesCrees++;
+            }
+        }
     }
-}
-
 }

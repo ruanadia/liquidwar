@@ -77,60 +77,61 @@ public class MoteurJeu {
         }
     }
 
-private void deplacerParticules() {
-    for (Equipe equipe : equipes) {
-        Cible cible = equipe.getCible();
-        float cibleX = (float) cible.getPosition().x();
-        float cibleY = (float) cible.getPosition().y();
+    private void deplacerParticules() {
+        for (Equipe equipe : equipes) {
+            Cible cible = equipe.getCible();
+            float cibleX = (float) cible.getPosition().x();
+            float cibleY = (float) cible.getPosition().y();
 
-        float centreX = 0, centreY = 0;
-        for (Particule p : equipe.getParticules()) {
-            centreX += p.getX();
-            centreY += p.getY();
-        }
-        int nbParticules = equipe.getParticules().size();
-        if (nbParticules > 0) {
-            centreX /= nbParticules;
-            centreY /= nbParticules;
-        }
-
-        for (Particule p : new ArrayList<>(equipe.getParticules())) {
-
-            int oldX = Math.round(p.getX());
-            int oldY = Math.round(p.getY());
-
-            int[][] grad = equipe.getGradient();
-            if (grad == null) continue;
-
-            Position next = choisirDirectionLW(p, grad);
-            if (next == null) continue;
-
-            Particule ennemi = null;
-            Case caseNext = carte.getCase(next.x(), next.y());
-            if (caseNext != null) {
-                ennemi = caseNext.getParticule();
+            float centreX = 0, centreY = 0;
+            for (Particule p : equipe.getParticules()) {
+                centreX += p.getX();
+                centreY += p.getY();
+            }
+            int nbParticules = equipe.getParticules().size();
+            if (nbParticules > 0) {
+                centreX /= nbParticules;
+                centreY /= nbParticules;
             }
 
-            if (ennemi != null && ennemi.getEquipe() != p.getEquipe()) {
+            for (Particule p : new ArrayList<>(equipe.getParticules())) {
 
-                boolean convertie = ennemi.subirAttaque(1, p.getEquipe());
+                int oldX = Math.round(p.getX());
+                int oldY = Math.round(p.getY());
 
-                if (convertie) {
-                    retirerParticuleDeSonEquipe(ennemi);
-                    ajouterParticuleDansEquipe(ennemi, p.getEquipe());
+                int[][] grad = equipe.getGradient();
+                if (grad == null)
+                    continue;
+
+                Position next = choisirDirectionLW(p, grad);
+                if (next == null)
+                    continue;
+
+                Particule ennemi = null;
+                Case caseNext = carte.getCase(next.x(), next.y());
+                if (caseNext != null) {
+                    ennemi = caseNext.getParticule();
                 }
 
-                continue;
-            }
+                if (ennemi != null && ennemi.getEquipe() != p.getEquipe()) {
 
-            if (carte.estLibre(next.x(), next.y())) {
-                p.setPosition(next.x(), next.y());
-                carte.mettreAJourParticule(p, oldX, oldY);
+                    boolean convertie = ennemi.subirAttaque(1, p.getEquipe());
+
+                    if (convertie) {
+                        retirerParticuleDeSonEquipe(ennemi);
+                        ajouterParticuleDansEquipe(ennemi, p.getEquipe());
+                    }
+
+                    continue;
+                }
+
+                if (carte.estLibre(next.x(), next.y())) {
+                    p.setPosition(next.x(), next.y());
+                    carte.mettreAJourParticule(p, oldX, oldY);
+                }
             }
         }
     }
-}
-
 
     public void setCibleEquipe(int idEquipe, float x, float y) {
         for (Equipe e : equipes) {
@@ -176,120 +177,132 @@ private void deplacerParticules() {
         return Math.max(0, DUREE_PARTIE - ecoule);
     }
 
-  
-private int[] choisirDirectionGradient(Particule p, int[][] grad) {
-    int x = Math.round(p.getX());
-    int y = Math.round(p.getY());
+    private int[] choisirDirectionGradient(Particule p, int[][] grad) {
+        int x = Math.round(p.getX());
+        int y = Math.round(p.getY());
 
-    int gActuel = grad[y][x];
-    if (gActuel < 0) return new int[]{0,0};
+        int gActuel = grad[y][x];
+        if (gActuel < 0)
+            return new int[] { 0, 0 };
 
-    int[][] dirs = {
-        {0,-1}, {0,1}, {-1,0}, {1,0},
-        {-1,-1}, {-1,1}, {1,-1}, {1,1}
-    };
+        int[][] dirs = {
+                { 0, -1 }, { 0, 1 }, { -1, 0 }, { 1, 0 },
+                { -1, -1 }, { -1, 1 }, { 1, -1 }, { 1, 1 }
+        };
 
-    int[] dirPrincipale = null;
-    int[] dirBonne = null;
-    int[] dirAcceptable = null;
+        int[] dirPrincipale = null;
+        int[] dirBonne = null;
+        int[] dirAcceptable = null;
 
-    for (int[] d : dirs) {
-        int nx = x + d[0];
-        int ny = y + d[1];
+        for (int[] d : dirs) {
+            int nx = x + d[0];
+            int ny = y + d[1];
 
-        if (nx < 0 || nx >= carte.getLargeur() || ny < 0 || ny >= carte.getHauteur())
-            continue;
+            if (nx < 0 || nx >= carte.getLargeur() || ny < 0 || ny >= carte.getHauteur())
+                continue;
 
-        if (carte.estObstacle(nx, ny))
-            continue;
+            if (carte.estObstacle(nx, ny))
+                continue;
 
-        int gVoisin = grad[ny][nx];
-        if (gVoisin < 0) continue;
+            int gVoisin = grad[ny][nx];
+            if (gVoisin < 0)
+                continue;
 
-        if (gVoisin < gActuel) {
-            // direction principale c le gradient minimal
-            if (dirPrincipale == null || gVoisin < grad[y + dirPrincipale[1]][x + dirPrincipale[0]]) {
-                dirBonne = dirPrincipale;
-                dirPrincipale = d;
+            if (gVoisin < gActuel) {
+                // direction principale c le gradient minimal
+                if (dirPrincipale == null || gVoisin < grad[y + dirPrincipale[1]][x + dirPrincipale[0]]) {
+                    dirBonne = dirPrincipale;
+                    dirPrincipale = d;
+                }
+            } else if (gVoisin == gActuel) {
+                dirAcceptable = d;
             }
-        } 
-        else if (gVoisin == gActuel) {
-            dirAcceptable = d;
+
         }
-        
+
+        if (dirPrincipale != null)
+            return dirPrincipale;
+        if (dirBonne != null)
+            return dirBonne;
+        if (dirAcceptable != null)
+            return dirAcceptable;
+
+        return new int[] { 0, 0 };
     }
 
-    
-    if (dirPrincipale != null) return dirPrincipale;
-    if (dirBonne != null) return dirBonne;
-    if (dirAcceptable != null) return dirAcceptable;
+    public Position choisirDirectionLW(Particule p, int[][] grad) {
 
-    return new int[]{0,0}; 
-}
-public Position choisirDirectionLW(Particule p, int[][] grad) {
+        int x = Math.round(p.getX());
+        int y = Math.round(p.getY());
+        int g0 = grad[y][x];
 
-    int x = Math.round(p.getX());
-    int y = Math.round(p.getY());
-    int g0 = grad[y][x];
+        Position[] voisins = {
+                new Position(x + 1, y),
+                new Position(x - 1, y),
+                new Position(x, y + 1),
+                new Position(x, y - 1)
+        };
 
-    Position[] voisins = {
-        new Position(x+1, y),
-        new Position(x-1, y),
-        new Position(x, y+1),
-        new Position(x, y-1)
-    };
+        Position principale = null;
+        Position bonne = null;
+        Position acceptable = null;
 
-    Position principale = null;
-    Position bonne = null;
-    Position acceptable = null;
+        int minG = Integer.MAX_VALUE;
 
-    int minG = Integer.MAX_VALUE;
+        for (Position v : voisins) {
+            int nx = v.x(), ny = v.y();
 
-    for (Position v : voisins) {
-        int nx = v.x(), ny = v.y();
+            if (!carte.estDansCarte(v))
+                continue;
 
-        if (!carte.estDansCarte(v)) continue;
+            if (carte.estObstacle(nx, ny))
+                continue;
 
-        if (carte.estObstacle(nx, ny)) continue;
+            int gv = grad[ny][nx];
 
-        int gv = grad[ny][nx];
-
-        if (gv < minG) { minG = gv; principale = v; }
-        if (gv < g0) bonne = v;
-        else if (gv == g0) acceptable = v;
-    }
-
-    if (principale != null) {
-        int nx = principale.x(), ny = principale.y();
-
-        if (carte.estLibre(nx, ny)) return principale;
-
-        if (estEnnemi(nx, ny, p)) {
-            attaquer(p, carte.getCase(nx, ny).getParticule());
-            return null;
+            if (gv < minG) {
+                minG = gv;
+                principale = v;
+            }
+            if (gv < g0)
+                bonne = v;
+            else if (gv == g0)
+                acceptable = v;
         }
-    }
 
-    if (bonne != null) {
-        int nx = bonne.x(), ny = bonne.y();
+        if (principale != null) {
+            int nx = principale.x(), ny = principale.y();
 
-        if (carte.estLibre(nx, ny)) return bonne;
+            if (carte.estLibre(nx, ny))
+                return principale;
 
-        if (estEnnemi(nx, ny, p)) {
-            attaquer(p, carte.getCase(nx, ny).getParticule());
-            return null;
+            if (estEnnemi(nx, ny, p)) {
+                attaquer(p, carte.getCase(nx, ny).getParticule());
+                return null;
+            }
         }
+
+        if (bonne != null) {
+            int nx = bonne.x(), ny = bonne.y();
+
+            if (carte.estLibre(nx, ny))
+                return bonne;
+
+            if (estEnnemi(nx, ny, p)) {
+                attaquer(p, carte.getCase(nx, ny).getParticule());
+                return null;
+            }
+        }
+
+        if (acceptable != null) {
+            int nx = acceptable.x(), ny = acceptable.y();
+
+            if (carte.estLibre(nx, ny))
+                return acceptable;
+        }
+
+        return null;
     }
-
-    if (acceptable != null) {
-        int nx = acceptable.x(), ny = acceptable.y();
-
-        if (carte.estLibre(nx, ny)) return acceptable;
-    }
-
-    return null;
-}
-
 
     private boolean estEnnemi(int x, int y, Particule p) {
         Particule autre = carte.getCase(x, y).getParticule();
@@ -300,19 +313,25 @@ public Position choisirDirectionLW(Particule p, int[][] grad) {
         boolean convertie = cible.subirAttaque(1, attaquant.getEquipe());
 
         if (convertie) {
-            //System.out.println("une conversion a eu lieu !"); pour debug
+            retirerParticuleDeSonEquipe(cible);
+            ajouterParticuleDansEquipe(cible, attaquant.getEquipe());
         }
     }
+
     private void retirerParticuleDeSonEquipe(Particule p) {
         for (Equipe e : equipes) {
-            e.getParticules().remove(p);
+            if (e.getParticules().contains(p)) {
+                e.retirerParticule(p);
+                break;
+            }
         }
     }
-    
+
     private void ajouterParticuleDansEquipe(Particule p, Equipe nouvelleEquipe) {
-        nouvelleEquipe.getParticules().add(p);
+        nouvelleEquipe.ajouterParticule(p);
     }
 
-
-
+    public List<Equipe> getEquipes() {
+        return equipes;
+    }
 }
