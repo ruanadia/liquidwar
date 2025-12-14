@@ -194,7 +194,11 @@ public class CarteJeu {
 
     public void genererCarte() {
         initialiserVide();
-        int nombreIlots = 17; 
+        genererRonds();  
+    }
+
+    private void genererRonds(){
+        int nombreIlots = 14; 
         int taillePinceauMin = 6;
         int taillePinceauMax = 12;
         int longueurTrace = 50;
@@ -204,7 +208,7 @@ public class CarteJeu {
 
             int rayon = (int) (taillePinceauMin + Math.random() * (taillePinceauMax - taillePinceauMin));
 
-            for (int pas = 0; pas < longueurTrace; pas++) {
+            for (int pas = 0; pas<longueurTrace; pas++) {
                 peindreCercleObstacle((int) x, (int) y, rayon);
                 x += (Math.random()*2-1)*1.5;
                 y += (Math.random()*2-1)*1.5;
@@ -213,6 +217,7 @@ public class CarteJeu {
             }
         }
     }
+
 
     private void peindreCercleObstacle(int cx, int cy, int r) {
         for (int y = cy - r; y <= cy + r; y++) {
@@ -225,4 +230,5 @@ public class CarteJeu {
             }
         }
     }
+
 }

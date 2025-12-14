@@ -27,7 +27,7 @@ import liquidwar.model.Particule;
 
 public class CarteVue extends JPanel {
     private final CarteJeu carte;
-    private final int tailleCase;
+    private int tailleCase;
     private final MoteurJeu moteur;
     private final int idEquipe;
     private boolean up = false, down = false, left = false, right = false;
