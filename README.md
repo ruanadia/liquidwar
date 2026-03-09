@@ -1,6 +1,6 @@
 <div align="center">
 
-# Projet Liquid War - CPOO 2025-2026
+# liquid war
 
 ![Java](https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=java&logoColor=white)
 ![Gradle](https://img.shields.io/badge/Gradle-02303A?style=for-the-badge&logo=gradle&logoColor=white)
@@ -14,10 +14,11 @@ Ce projet est une implémentation du jeu **Liquid War** en Java, un jeu de comba
 
 Ce projet met en pratique plusieurs concepts de la programmation orientée objet :
 
-* **Architecture MVC (Modèle-Vue-Contrôleur) :** Le code est organisé en trois parties. Le Modèle contient les données du jeu (la carte, les équipes, les particules), la Vue gère l'affichage graphique à l'écran, et le Contrôleur fait le lien entre les actions du joueur et les mises à jour du jeu.
-* **Encapsulation :** Les informations internes des objets (comme la position exacte d'une particule) sont cachées et protégées. On interagit avec ces données uniquement grâce à des méthodes bien précises.
-* **Gestion graphique :** Création d'une interface visuelle avec les outils standards de Java pour dessiner la fenêtre de jeu et réagir aux interactions de l'utilisateur.
-* **Outil d'automatisation :** Utilisation de Gradle pour faciliter la compilation du programme et le lancement des tests unitaires sans avoir à tout configurer manuellement.
+* **Architecture MVC (Modèle-Vue-Contrôleur) :** Séparation des responsabilités. Le **Modèle** gère la logique métier et la physique (collisions, déplacements), la **Vue** s'occupe du rendu graphique, et le **Contrôleur** écoute les événements utilisateur pour mettre à jour le Modèle sans que ce dernier n'ait connaissance de l'interface.
+* **Encapsulation et Cohérence :** Utilisation des modificateurs d'accès (`private`, `protected`). L'état interne des entités (comme les coordonnées d'une particule ou la grille de la carte) est protégé. Il ne peut être altéré que via des méthodes spécifiques, pour garantir l'intégrité des données pendant les calculs.
+* **Design Pattern "Fabrique" (Factory) :** Implémentation de ce motif de conception pour instancier dynamiquement les éléments du jeu. Cela centralise la logique de création et permet d'ajouter de nouveaux comportements sans avoir à modifier le code de base.
+* **Multithreading et Threads Virtuels (Java 21) :** La boucle principale du jeu (Game Loop) doit calculer la physique et rafraîchir l'affichage simultanément. Le projet exploite la concurrence en Java, notamment avec les **Threads Virtuels** (très légers en ressources), pour exécuter ces tâches en parallèle de manière fluide et performante.
+* **Automatisation avec Gradle :** Utilisation de cet outil de build pour standardiser le cycle de vie du projet : gestion des dépendances, compilation des classes, et exécution automatisée de la suite de tests unitaires.
 
 ## Prérequis
 
