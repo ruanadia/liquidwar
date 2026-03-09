@@ -35,3 +35,7 @@ Ce projet met en pratique plusieurs concepts de la programmation orientée objet
 ```bash
 ./gradlew clean  # nettoyer le projet
 ```
+
+## Membres
+* Ayachi Nadia
+* Boukais Melissa
